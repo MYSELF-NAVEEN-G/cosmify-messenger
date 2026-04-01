@@ -1,0 +1,156 @@
+@import "tailwindcss";
+
+@theme {
+  /* Default Colors (Dark Mode) - Classic Dark */
+  --color-neo-bg: #0b141a;
+  --color-neo-surface: #111b21;
+  --color-neo-border: rgba(134, 150, 160, 0.15);
+  --color-neo-text: #e9edef;
+  --color-neo-text-dim: #8696a0;
+  --color-neo-primary: #00a884;
+  --color-neo-secondary: #008069;
+  --color-neo-accent: #ff4d8d;
+  --color-neo-msg-own: #005c4b;
+  --color-neo-msg-other: #202c33;
+  --color-neo-header: #111b21;
+  --color-neo-pink: #ff4d8d;
+
+  --animate-float: float 6s ease-in-out infinite;
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+}
+
+
+.theme-nebula {
+  --color-neo-bg: #1a0b2e;
+  --color-neo-surface: #2e0b5e;
+  --color-neo-primary: #9d50bb;
+  --color-neo-secondary: #6e48aa;
+  --color-neo-accent: #ff4d8d;
+  --color-neo-msg-own: #6e48aa;
+  --color-neo-msg-other: #1a1a2e;
+  --color-neo-text: #ffffff;
+  --color-neo-text-dim: rgba(255, 255, 255, 0.6);
+}
+
+.theme-cyber {
+  --color-neo-bg: #061111;
+  --color-neo-surface: #0a1e1e;
+  --color-neo-primary: #00ccff;
+  --color-neo-secondary: #00ffcc;
+  --color-neo-accent: #00e5ff;
+  --color-neo-msg-own: #0088aa;
+  --color-neo-msg-other: #0a1e1e;
+  --color-neo-text: #ffffff;
+  --color-neo-text-dim: rgba(255, 255, 255, 0.6);
+}
+
+.theme-void {
+  --color-neo-bg: #000000;
+  --color-neo-surface: #0a0a0a;
+  --color-neo-border: rgba(255, 255, 255, 0.05);
+  --color-neo-primary: #333333;
+  --color-neo-secondary: #555555;
+  --color-neo-msg-own: #222222;
+  --color-neo-msg-other: #0a0a0a;
+}
+
+.theme-starlight {
+  --color-neo-bg: #05051a;
+  --color-neo-surface: #0a0a2e;
+  --color-neo-primary: #4158d0;
+  --color-neo-secondary: #c850c0;
+  --color-neo-msg-own: #4158d0;
+  --color-neo-msg-other: #1a1a4e;
+}
+
+.theme-wa-light {
+  --color-neo-bg: #f5f0e1;
+  --color-neo-text: #423d33;
+  --color-neo-text-dim: #7c7569;
+  --color-neo-surface: #ede6d4;
+  --color-neo-border: rgba(0, 0, 0, 0.08);
+  --color-neo-primary: #bf9b30;
+  --color-neo-secondary: #8c732c;
+  --color-neo-msg-own: #e3dbcc;
+  --color-neo-msg-other: #fcfaf5;
+}
+
+.theme-wa-dark {
+  --color-neo-bg: #0b141a;
+  --color-neo-text: #e9edef;
+  --color-neo-text-dim: #8696a0;
+  --color-neo-surface: #202c33;
+  --color-neo-border: rgba(134, 150, 160, 0.15);
+  --color-neo-primary: #005c4b;
+  --color-neo-secondary: #00a884;
+  --color-neo-msg-own: #005c4b;
+  --color-neo-msg-other: #202c33;
+}
+
+@layer base {
+  body {
+    @apply bg-neo-bg text-neo-text font-sans overflow-hidden selection:bg-neo-primary/30;
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    width: 100vw;
+    -webkit-font-smoothing: antialiased;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+}
+
+@layer components {
+  .neo-glass {
+    @apply bg-neo-surface border border-neo-border shadow-md rounded-2xl;
+  }
+
+  .neo-glass-dark {
+    @apply bg-black/60 backdrop-blur-xl border border-white/10 shadow-2xl rounded-[32px];
+  }
+
+  .neo-btn-icon {
+    @apply p-2.5 rounded-full hover:bg-neo-surface transition-all text-neo-text-dim hover:text-neo-text active:scale-95;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-neo-text/10 rounded-full hover:bg-neo-text/20 transition-colors;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+/* Hide scrollbar for IE, Edge and Firefox */
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+/* Doodle Pattern Background - Tiled Overlay */
+.doodle-bg {
+  position: absolute;
+  inset: 0;
+  opacity: 0.05;
+  pointer-events: none;
+  background-image: url("https://www.transparenttextures.com/patterns/cubes.png"); /* Placeholder for doodles */
+  background-repeat: repeat;
+  mix-blend-mode: overlay;
+  z-index: 1;
+}
+
+.theme-wa-light .doodle-bg {
+  opacity: 0.1;
+  mix-blend-mode: multiply;
+}
