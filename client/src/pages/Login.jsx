@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useChat } from '../context/ChatContext';
 import { auth, googleProvider } from '../firebase';
-import { signInWithPopup } from 'firebase/auth';
+import { signInWithPopup, signInWithRedirect, getRedirectResult } from 'firebase/auth';
 import { motion } from 'framer-motion';
 import Logo from '../components/Logo';
 
@@ -13,6 +13,16 @@ const Login = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Handle redirect result
+    const checkRedirect = async () => {
+        try {
+            await getRedirectResult(auth);
+        } catch (err) {
+            console.error(err);
+        }
+    };
+    checkRedirect();
+
     if (user) {
       if (user.profileComplete) navigate('/chat');
       else navigate('/profile-setup');
@@ -23,7 +33,8 @@ const Login = () => {
     setError('');
     setLoading(true);
     try {
-      await signInWithPopup(auth, googleProvider);
+      // Use redirect instead of popup for better compatibility with WebViews
+      await signInWithRedirect(auth, googleProvider);
     } catch (err) {
       console.error(err);
       setError('Failed to sign in. Please try again.');
