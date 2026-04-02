@@ -203,9 +203,15 @@ const SettingsDrawer = ({ isOpen, onClose }) => {
       <AnimatePresence mode="wait">
         {/* VIEW: MAIN SETTINGS */}
         {view === 'main' && (
-          <motion.div key="main" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex-1 flex flex-col">
+          <motion.div 
+            key="main" 
+            initial={{ opacity: 0, x: -20 }} 
+            animate={{ opacity: 1, x: 0 }} 
+            exit={{ opacity: 0, x: -20 }} 
+            className="flex-1 h-full flex flex-col"
+          >
             {renderHeader('Settings', 'close')}
-            <div className="flex-1 overflow-y-auto custom-scrollbar pt-4 pb-12">
+            <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar pt-4 pb-20 overscroll-behavior-y-contain">
               <button onClick={() => setView('profile')} className="w-full flex items-center gap-5 px-6 py-6 hover:bg-neo-surface transition-colors group mb-4 border-b border-neo-border">
                 <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-neo-purple/40 shadow-[0_0_15px_rgba(138,43,226,0.2)]">
                   <img src={user?.avatar} alt="Profile" className="w-full h-full object-cover" />
@@ -285,9 +291,15 @@ const SettingsDrawer = ({ isOpen, onClose }) => {
 
         {/* VIEW: EDIT PROFILE */}
         {view === 'profile' && (
-          <motion.div key="profile" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="flex-1 flex flex-col">
+          <motion.div 
+            key="profile" 
+            initial={{ opacity: 0, x: 20 }} 
+            animate={{ opacity: 1, x: 0 }} 
+            exit={{ opacity: 0, x: 20 }} 
+            className="flex-1 h-full flex flex-col"
+          >
             {renderHeader('Edit Profile')}
-            <div className="flex-1 overflow-y-auto p-8 flex flex-col items-center custom-scrollbar">
+            <div className="flex-1 min-h-0 overflow-y-auto p-8 flex flex-col items-center custom-scrollbar pb-24 overscroll-behavior-y-contain">
             <div className="relative group mb-10">
                 <input 
                   type="file" 
@@ -398,9 +410,15 @@ const SettingsDrawer = ({ isOpen, onClose }) => {
 
         {/* VIEW: PRIVACY */}
         {view === 'privacy' && (
-          <motion.div key="privacy" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="flex-1 flex flex-col overflow-hidden">
+          <motion.div 
+            key="privacy" 
+            initial={{ opacity: 0, x: 20 }} 
+            animate={{ opacity: 1, x: 0 }} 
+            exit={{ opacity: 0, x: 20 }} 
+            className="flex-1 h-full flex flex-col overflow-hidden"
+          >
             {renderHeader('Privacy')}
-            <div className="flex-1 overflow-y-auto custom-scrollbar">
+            <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar overscroll-behavior-y-contain">
                 <div className="p-6 border-b border-neo-border">
                     <h3 className="text-xs font-black uppercase text-neo-text-dim tracking-[0.2em] mb-5">Privacy Controls</h3>
 
@@ -489,9 +507,15 @@ const SettingsDrawer = ({ isOpen, onClose }) => {
 
         {/* VIEW: CHATS (CLEAN REDESIGN) */}
         {view === 'chats' && (
-          <motion.div key="chats" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="flex-1 flex flex-col overflow-hidden">
+          <motion.div 
+            key="chats" 
+            initial={{ opacity: 0, x: 20 }} 
+            animate={{ opacity: 1, x: 0 }} 
+            exit={{ opacity: 0, x: 20 }} 
+            className="flex-1 h-full flex flex-col overflow-hidden"
+          >
             {renderHeader('Chat Settings')}
-            <div className="flex-1 overflow-y-auto custom-scrollbar bg-neo-bg">
+            <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar bg-neo-bg overscroll-behavior-y-contain">
                 
                 {/* 1. Preview Area (Mock chat bubble) */}
                 <div className="p-8 flex flex-col gap-4 border-b border-neo-border bg-neo-surface/20">
