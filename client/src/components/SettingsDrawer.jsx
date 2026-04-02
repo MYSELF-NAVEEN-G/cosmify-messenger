@@ -27,8 +27,7 @@ import {
   Palette as PaletteIcon,
   CornerDownRight,
   Download,
-  Zap,
-  Bell
+  Zap
 } from 'lucide-react';
 import NotificationService from '../utils/NotificationService';
 import { useChat } from '../context/ChatContext';
