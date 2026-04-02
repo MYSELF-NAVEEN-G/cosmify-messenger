@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { auth, db } from '../firebase';
 import { onAuthStateChanged, signOut, getRedirectResult } from 'firebase/auth';
-import { doc, onSnapshot, updateDoc } from 'firebase/firestore';
+import { doc, onSnapshot, updateDoc, collection, query, where, orderBy, getDoc } from 'firebase/firestore';
+import NotificationService from '../utils/NotificationService';
 
 const ChatContext = createContext();
 
@@ -116,6 +117,54 @@ export const ChatProvider = ({ children }) => {
     };
   }, [user?._id]);
 
+  // 4. Global notification listener for ANY conversation update
+  useEffect(() => {
+    if (!user?._id) return;
+
+    const q = query(
+      collection(db, 'conversations'),
+      where('participantIds', 'array-contains', user._id)
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      snapshot.docChanges().forEach((change) => {
+        if (change.type === 'modified') {
+          const data = change.doc.data();
+          const lastMsg = data.lastMessage;
+          
+          // Only notify if:
+          // 1. New message exists
+          // 2. Message is NOT FROM current user
+          // 3. Message is NOT in the currently active chat
+          // 4. App settings allow notifications (optional: check user prefs)
+          if (lastMsg && lastMsg.senderId !== user._id && selectedChat?._id !== change.doc.id) {
+             const soundOnly = user.notificationSettings?.soundOnly || false;
+             const muted = user.notificationSettings?.muted || false;
+
+             if (!muted) {
+                NotificationService.playSound();
+                if (!soundOnly) {
+                   NotificationService.sendNotification(lastMsg.senderName || 'New Message', {
+                     body: lastMsg.text,
+                     tag: change.doc.id // Group notifications by chat
+                   });
+                }
+             }
+          }
+        }
+      });
+    }, (err) => console.error("Global alert listener error:", err));
+
+    return () => unsubscribe();
+  }, [user?._id, selectedChat?._id, user.notificationSettings]);
+
+  // Request notification permissions on mount
+  useEffect(() => {
+    if (user?._id) {
+        NotificationService.requestPermission();
+    }
+  }, [user?._id]);
+
   const logout = async () => {
     try {
       if (user?._id) {
@@ -140,8 +189,8 @@ export const ChatProvider = ({ children }) => {
         chats,
         setChats,
         notification,
-        notification,
         setNotification,
+        notificationSettings: user?.notificationSettings || { muted: false, soundOnly: false },
         updateSettings: async (settings) => {
           if (!user?._id) return;
           // Optimistically update local state for immediate feedback

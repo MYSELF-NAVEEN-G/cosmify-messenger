@@ -168,6 +168,7 @@ const ChatBox = () => {
         lastMessage: {
           text: text,
           senderId: user._id,
+          senderName: user.username,
           createdAt: serverTimestamp()
         },
         updatedAt: serverTimestamp()
@@ -216,7 +217,12 @@ const ChatBox = () => {
             createdAt: serverTimestamp(),
           });
           await updateDoc(doc(db, 'conversations', selectedChat._id), {
-            lastMessage: { text: '📷 Photo', senderId: user._id, createdAt: serverTimestamp() },
+            lastMessage: { 
+              text: '📷 Photo', 
+              senderId: user._id, 
+              senderName: user.username,
+              createdAt: serverTimestamp() 
+            },
             updatedAt: serverTimestamp()
           });
           setImagePreview(null);

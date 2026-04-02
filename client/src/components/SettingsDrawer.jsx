@@ -26,8 +26,11 @@ import {
   Image as ImageIcon, 
   Palette as PaletteIcon,
   CornerDownRight,
-  Download
+  Download,
+  Zap,
+  Bell
 } from 'lucide-react';
+import NotificationService from '../utils/NotificationService';
 import { useChat } from '../context/ChatContext';
 import { db } from '../firebase';
 import { doc, updateDoc, getDoc } from 'firebase/firestore';
@@ -54,7 +57,7 @@ const SettingsItem = ({ icon: Icon, title, description, onClick, rightElement })
 );
 
 const SettingsDrawer = ({ isOpen, onClose }) => {
-  const { user, logout, updateSettings } = useChat();
+  const { user, logout, updateSettings, notificationSettings } = useChat();
   const [view, setView] = useState('main'); // main, profile, account, privacy, chats, notifications
   const [name, setName] = useState(user?.username || '');
   const [avatar, setAvatar] = useState(user?.avatar || '');
@@ -228,6 +231,7 @@ const SettingsDrawer = ({ isOpen, onClose }) => {
                 <SettingsItem icon={Lock} title="Privacy" description="Block contacts, disappearing messages" onClick={() => setView('privacy')} />
                 <SettingsItem icon={Users} title="Lists" description="Manage people and groups" />
                 <SettingsItem icon={MessageSquare} title="Chats" description="Theme, wallpapers, chat history" onClick={() => setView('chats')} />
+                <SettingsItem icon={Bell} title="Notifications" description="Message sounds, alerts, previews" onClick={() => setView('notifications')} />
                 
                 {canInstall && (
                   <div className="mt-4 px-6 mb-4">
@@ -636,6 +640,70 @@ const SettingsDrawer = ({ isOpen, onClose }) => {
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* VIEW: NOTIFICATIONS */}
+        {view === 'notifications' && (
+          <motion.div 
+            key="notifications" 
+            initial={{ opacity: 0, x: 20 }} 
+            animate={{ opacity: 1, x: 0 }} 
+            exit={{ opacity: 0, x: 20 }} 
+            className="flex-1 h-full flex flex-col overflow-hidden"
+          >
+            {renderHeader('Notifications')}
+            <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar overscroll-behavior-y-contain">
+                <div className="p-6 border-b border-neo-border bg-neo-primary/5">
+                    <div className="flex items-center gap-4 text-neo-primary mb-2">
+                        <Bell size={24} />
+                        <h3 className="font-bold text-neo-text tracking-widest uppercase text-xs">Alert Preferences</h3>
+                    </div>
+                    <p className="text-neo-text-dim text-[11px] leading-relaxed">Customize how you receive signals from your contacts across the galaxy.</p>
+                </div>
+
+                <div className="py-4">
+                    <div className="px-6 py-6 border-b border-neo-border flex items-center justify-between group">
+                        <div className="flex-1">
+                            <h4 className="text-neo-text text-[15px] font-medium mb-1">Mute All Notifications</h4>
+                            <p className="text-neo-text-dim text-[11px]">Silence all incoming message alerts</p>
+                        </div>
+                        <button 
+                            onClick={() => updateSettings({ notificationSettings: { ...notificationSettings, muted: !notificationSettings.muted } })}
+                            className={`w-12 h-6 rounded-full transition-all relative ${notificationSettings.muted ? 'bg-neo-pink' : 'bg-neo-primary/20'}`}
+                        >
+                            <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${notificationSettings.muted ? 'left-7' : 'left-1'}`} />
+                        </button>
+                    </div>
+
+                    <div className="px-6 py-6 border-b border-neo-border flex items-center justify-between group">
+                        <div className="flex-1">
+                            <h4 className="text-neo-text text-[15px] font-medium mb-1">Sound Only</h4>
+                            <p className="text-neo-text-dim text-[11px]">Play sound without showing browser popups</p>
+                        </div>
+                        <button 
+                            disabled={notificationSettings.muted}
+                            onClick={() => updateSettings({ notificationSettings: { ...notificationSettings, soundOnly: !notificationSettings.soundOnly } })}
+                            className={`w-12 h-6 rounded-full transition-all relative ${notificationSettings.soundOnly ? 'bg-neo-primary' : 'bg-neo-primary/20'} ${notificationSettings.muted ? 'opacity-20 pointer-events-none' : ''}`}
+                        >
+                            <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${notificationSettings.soundOnly ? 'left-7' : 'left-1'}`} />
+                        </button>
+                    </div>
+
+                    <div className="px-6 py-10 flex flex-col items-center gap-4">
+                        <button 
+                            onClick={() => {
+                                NotificationService.playSound();
+                                NotificationService.sendNotification("Cosmify Signal Test", { body: "Notifications are active and connected." });
+                            }}
+                            className="px-8 py-3 rounded-full border border-neo-primary/30 text-neo-primary text-[10px] font-black uppercase tracking-widest hover:bg-neo-primary/10 transition-all flex items-center gap-2"
+                        >
+                            <Zap size={14} /> Send Test Alert
+                        </button>
+                        <p className="text-[10px] text-neo-text-dim italic text-center">Tip: If alerts don't appear, check your browser's site settings.</p>
                     </div>
                 </div>
             </div>
