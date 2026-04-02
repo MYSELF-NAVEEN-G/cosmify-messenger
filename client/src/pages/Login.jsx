@@ -22,13 +22,28 @@ const Login = () => {
   const handleGoogleLogin = async () => {
     setError('');
     setLoading(true);
+    
+    // Force account selection to prevent silent redirect loops
+    googleProvider.setCustomParameters({ prompt: 'select_account' });
+
     try {
-      // Use redirect instead of popup for better compatibility with WebViews
-      await signInWithRedirect(auth, googleProvider);
+      // 1. Try Popup first (Most reliable for Desktop and standard Mobile browsers)
+      await signInWithPopup(auth, googleProvider);
     } catch (err) {
-      console.error(err);
-      setError('Failed to sign in. Please try again.');
-      setLoading(false);
+      // 2. If popup is blocked or fails, fall back to Redirect
+      if (err.code === 'auth/popup-blocked' || err.code === 'auth/cancelled-popup-request' || err.code === 'auth/popup-closed-by-user') {
+        try {
+          await signInWithRedirect(auth, googleProvider);
+        } catch (redirErr) {
+          console.error("Redirect failed:", redirErr);
+          setError('Sign in failed. Please check your browser settings.');
+          setLoading(false);
+        }
+      } else {
+        console.error("Authentication error:", err);
+        setError('Failed to sign in. Please try again.');
+        setLoading(false);
+      }
     }
   };
 

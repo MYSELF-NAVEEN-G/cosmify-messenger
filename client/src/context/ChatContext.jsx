@@ -16,69 +16,62 @@ export const ChatProvider = ({ children }) => {
 
   useEffect(() => {
     let unsubUser = null;
-    let redirectChecked = false;
+    let unsubAuth = null;
 
-    // We use a flag to track if we've finished the initial auth check
-    const initAuth = async () => {
+    const init = async () => {
+      // 1. Handle redirect result BEFORE starting the listener
       try {
         await getRedirectResult(auth);
       } catch (err) {
         console.error("Auth redirect error:", err);
-      } finally {
-        redirectChecked = true;
-      }
-    };
-    initAuth();
-
-    const unsubAuth = onAuthStateChanged(auth, async (firebaseUser) => {
-      // 1. Cleanup previous user listener if it exists
-      if (unsubUser) {
-        unsubUser();
-        unsubUser = null;
       }
 
-      if (firebaseUser) {
-        const userRef = doc(db, 'users', firebaseUser.uid);
-        
-        // 2. Start a fresh listener for the current user's profile
-        unsubUser = onSnapshot(userRef, (docSnap) => {
-          if (docSnap.exists()) {
-            const userData = docSnap.data();
-            setUser({ 
-              ...firebaseUser, 
-              ...userData, 
-              _id: firebaseUser.uid,
-              profileComplete: !!userData.phone 
-            });
-          } else {
-            // Document doesn't exist yet (new account)
-            setUser({ 
-              ...firebaseUser, 
-              _id: firebaseUser.uid, 
-              profileComplete: false 
-            });
-          }
-          setLoading(false);
-        }, (error) => {
-          console.error("User listener error:", error);
-          setUser({ ...firebaseUser, _id: firebaseUser.uid, profileComplete: false });
-          setLoading(false);
-        });
-      } else {
-        // Only set loading to false if we've at least checked for a redirect result
-        // This avoids flickering to Login page while redirect is processing
-        setUser(null);
-        if (redirectChecked) {
-          setLoading(false);
-        } else {
-          // If redirect check isn't done yet, wait short period or let the next auth change handle it
-          setTimeout(() => setLoading(false), 2000); 
+      // 2. Start the auth state listener
+      unsubAuth = onAuthStateChanged(auth, async (firebaseUser) => {
+        // Cleanup previous user listener if it exists
+        if (unsubUser) {
+          unsubUser();
+          unsubUser = null;
         }
-      }
-    });
+
+        if (firebaseUser) {
+          const userRef = doc(db, 'users', firebaseUser.uid);
+          
+          // 3. Start a fresh listener for the current user's profile
+          unsubUser = onSnapshot(userRef, (docSnap) => {
+            if (docSnap.exists()) {
+              const userData = docSnap.data();
+              setUser({ 
+                ...firebaseUser, 
+                ...userData, 
+                _id: firebaseUser.uid,
+                profileComplete: !!userData.phone 
+              });
+            } else {
+              // Document doesn't exist yet (new account)
+              setUser({ 
+                ...firebaseUser, 
+                _id: firebaseUser.uid, 
+                profileComplete: false 
+              });
+            }
+            setLoading(false);
+          }, (error) => {
+            console.error("User listener error:", error);
+            setUser({ ...firebaseUser, _id: firebaseUser.uid, profileComplete: false });
+            setLoading(false);
+          });
+        } else {
+          setUser(null);
+          setLoading(false);
+        }
+      });
+    };
+
+    init();
 
     return () => {
-      unsubAuth();
+      if (unsubAuth) unsubAuth();
       if (unsubUser) unsubUser();
     };
   }, []);
