@@ -141,10 +141,6 @@ const ChatList = () => {
             text: "Tap to start chatting", 
             senderId: "system",
             createdAt: serverTimestamp() 
-          },
-          unreadCounts: {
-            [user._id]: 0,
-            [targetUser._id]: 0
           }
         };
         const docRef = await addDoc(collection(db, 'conversations'), newChat);
@@ -270,17 +266,6 @@ const ChatList = () => {
                       </p>
                     </div>
                   </div>
-
-                  {/* Unread Count Badge */}
-                  {chat.unreadCounts?.[user._id] > 0 && (
-                      <motion.div 
-                        initial={{ scale: 0, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        className="flex-shrink-0 min-w-[22px] h-[22px] bg-neo-primary text-black text-[10px] font-black rounded-full flex items-center justify-center px-1.5 shadow-[0_0_15px_rgba(var(--neo-primary-rgb),0.4)] animate-pulse"
-                      >
-                        {chat.unreadCounts[user._id]}
-                      </motion.div>
-                  )}
                 </motion.div>
               );
             })
