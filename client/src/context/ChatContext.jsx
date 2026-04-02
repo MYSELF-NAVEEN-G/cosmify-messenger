@@ -140,7 +140,6 @@ export const ChatProvider = ({ children }) => {
         chats,
         setChats,
         notification,
-        notification,
         setNotification,
         updateSettings: async (settings) => {
           if (!user?._id) return;
