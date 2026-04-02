@@ -201,6 +201,7 @@ const ChatBox = () => {
       });
 
       await updateDoc(convRef, updates);
+
     } catch (err) {
       console.error("Error sending message:", err);
       setError(`Send failed: ${err.message}`);
