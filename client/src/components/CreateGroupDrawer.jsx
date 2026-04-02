@@ -63,7 +63,8 @@ const CreateGroupDrawer = ({ isOpen, onClose }) => {
         admins: [user._id],
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
-        lastMessage: { text: `${user.username} created this group`, senderId: 'system', createdAt: serverTimestamp() }
+        lastMessage: { text: `${user.username} created this group`, senderId: 'system', createdAt: serverTimestamp() },
+        unreadCounts: participantIds.reduce((acc, id) => ({ ...acc, [id]: 0 }), {})
       });
       setSelectedChat({
         _id: docRef.id,
