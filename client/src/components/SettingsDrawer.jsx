@@ -66,6 +66,7 @@ const SettingsDrawer = ({ isOpen, onClose }) => {
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [avatarUploadProgress, setAvatarUploadProgress] = useState(0);
   const [canInstall, setCanInstall] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
   const fileInputRef = React.useRef();
   
   // Account settings
@@ -85,13 +86,21 @@ const SettingsDrawer = ({ isOpen, onClose }) => {
     // Check if app can be installed as PWA
     const checkInstallation = () => {
       const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-      if (!isStandalone && window.deferredPrompt) {
-        setCanInstall(true);
+      const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+      setIsIOS(iOS);
+
+      // Show install option if not standalone
+      if (!isStandalone) {
+        if (window.deferredPrompt || iOS) {
+          setCanInstall(true);
+        }
       }
     };
 
     checkInstallation();
-    window.addEventListener('beforeinstallprompt', () => setCanInstall(true));
+    const handlePrompt = () => setCanInstall(true);
+    window.addEventListener('beforeinstallprompt', handlePrompt);
+    return () => window.removeEventListener('beforeinstallprompt', handlePrompt);
   }, [user]);
 
   // Fetch blocked users details when entering Privacy view
@@ -215,25 +224,34 @@ const SettingsDrawer = ({ isOpen, onClose }) => {
                 <SettingsItem icon={MessageSquare} title="Chats" description="Theme, wallpapers, chat history" onClick={() => setView('chats')} />
                 
                 {canInstall && (
-                  <div className="mt-4 px-6">
-                    <div className="p-5 rounded-3xl bg-neo-primary/10 border border-neo-primary/30 space-y-4">
+                  <div className="mt-4 px-6 mb-4">
+                    <div className="p-6 rounded-3xl bg-neo-primary/10 border border-neo-primary/30 space-y-4 shadow-[0_0_20px_rgba(var(--neo-primary-rgb),0.05)]">
                       <div className="flex items-center gap-4 text-neo-primary">
                           <Download size={24} />
                           <h3 className="font-bold text-neo-text tracking-widest uppercase text-xs">App Available</h3>
                       </div>
-                      <p className="text-neo-text-dim text-[11px] leading-relaxed">Download Cosmify as a web app for a faster experience and offline access.</p>
-                      <button 
-                        onClick={handleInstallApp}
-                        className="w-full py-2.5 bg-neo-primary text-black text-[10px] font-black uppercase tracking-widest rounded-xl hover:scale-[1.02] active:scale-95 transition-all"
-                      >
-                        Install Now
-                      </button>
+                      
+                      {isIOS ? (
+                        <p className="text-neo-text-dim text-[11px] leading-relaxed">
+                          To install: Tap the <span className="text-neo-primary font-bold">Share</span> icon below and select <span className="text-neo-primary font-bold">"Add to Home Screen"</span>.
+                        </p>
+                      ) : (
+                        <>
+                          <p className="text-neo-text-dim text-[11px] leading-relaxed">Download Cosmify as a web app for a faster experience and offline access.</p>
+                          <button 
+                            onClick={handleInstallApp}
+                            className="w-full py-3 bg-neo-primary text-black text-[11px] font-black uppercase tracking-widest rounded-xl hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-neo-primary/20"
+                          >
+                            Install Now
+                          </button>
+                        </>
+                      )}
                     </div>
                   </div>
                 )}
               </div>
 
-              <div className="mt-8 px-6 pb-8">
+              <div className="mt-12 px-6 pb-20">
                 {!confirmLogout ? (
                   <button
                     onClick={() => setConfirmLogout(true)}
