@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { auth, db } from '../firebase';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { onAuthStateChanged, signOut, getRedirectResult } from 'firebase/auth';
 import { doc, onSnapshot, updateDoc } from 'firebase/firestore';
 
 const ChatContext = createContext();
@@ -16,6 +16,19 @@ export const ChatProvider = ({ children }) => {
 
   useEffect(() => {
     let unsubUser = null;
+    let redirectChecked = false;
+
+    // We use a flag to track if we've finished the initial auth check
+    const initAuth = async () => {
+      try {
+        await getRedirectResult(auth);
+      } catch (err) {
+        console.error("Auth redirect error:", err);
+      } finally {
+        redirectChecked = true;
+      }
+    };
+    initAuth();
 
     const unsubAuth = onAuthStateChanged(auth, async (firebaseUser) => {
       // 1. Cleanup previous user listener if it exists
@@ -52,8 +65,15 @@ export const ChatProvider = ({ children }) => {
           setLoading(false);
         });
       } else {
+        // Only set loading to false if we've at least checked for a redirect result
+        // This avoids flickering to Login page while redirect is processing
         setUser(null);
-        setLoading(false);
+        if (redirectChecked) {
+          setLoading(false);
+        } else {
+          // If redirect check isn't done yet, wait short period or let the next auth change handle it
+          setTimeout(() => setLoading(false), 2000); 
+        }
       }
     });
 
