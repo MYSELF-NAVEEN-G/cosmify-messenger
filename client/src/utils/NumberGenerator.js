@@ -28,32 +28,40 @@ export const generateRandom10Digit = () => {
  */
 export const generateFancy10Digit = () => {
   const patterns = [
-    // 1. Repeating triplets at start
+    // 1. Full 10-digit repetition (e.g., 9999999999)
     () => {
       const d = Math.floor(Math.random() * 9) + 1;
-      return `${d}${d}${d}${Math.floor(1000000 + Math.random() * 9000000)}`;
+      return String(d).repeat(10);
     },
-    // 2. Sequential start
+    // 2. Twin Triplets at start (e.g., 999 000 xxxx)
     () => {
-      const start = Math.floor(Math.random() * 5) + 1;
-      return `${start}${start+1}${start+2}${Math.floor(1000000 + Math.random() * 9000000)}`;
+      const d1 = Math.floor(Math.random() * 9) + 1;
+      const d2 = (d1 + 1) % 10;
+      return `${d1}${d1}${d1}${d2}${d2}${d2}${Math.floor(1000 + Math.random() * 9000)}`;
     },
-    // 3. Symmetric/Mirror pattern
+    // 3. Sequential 10-digit rise or fall
+    () => {
+        const start = Math.floor(Math.random() * 2); // 0 or 1
+        return [0,1,2,3,4,5,6,7,8,9].slice(start, start + 10).join('') || "1234567890";
+    },
+    // 4. Repeating alternating pairs (e.g., 121212xxxx)
+    () => {
+        const d1 = Math.floor(Math.random() * 9) + 1;
+        const d2 = Math.floor(Math.random() * 10);
+        return `${d1}${d2}${d1}${d2}${d1}${d2}${d1}${d2}${Math.floor(10 + Math.random() * 90)}`;
+    },
+    // 5. Ending with 000000 (Mega-round)
+    () => {
+        return `${Math.floor(1000 + Math.random() * 9000)}000000`;
+    },
+    // 6. Mirror pattern with middle gap (e.g., 12345 54321)
     () => {
         const d1 = Math.floor(Math.random() * 9) + 1;
         const d2 = Math.floor(Math.random() * 10);
         const d3 = Math.floor(Math.random() * 10);
-        return `${d1}${d2}${d3}${d3}${d2}${d1}${Math.floor(1000 + Math.random() * 9000)}`;
-    },
-    // 4. Repeating alternating
-    () => {
-        const d1 = Math.floor(Math.random() * 9) + 1;
-        const d2 = Math.floor(Math.random() * 10);
-        return `${d1}${d2}${d1}${d2}${d1}${d2}${Math.floor(1000 + Math.random() * 9000)}`;
-    },
-    // 5. Ending with 000
-    () => {
-        return `${Math.floor(1000000 + Math.random() * 9000000)}000`;
+        const d4 = Math.floor(Math.random() * 10);
+        const d5 = Math.floor(Math.random() * 10);
+        return `${d1}${d2}${d3}${d4}${d5}${d5}${d4}${d3}${d2}${d1}`;
     }
   ];
 
