@@ -30,8 +30,6 @@ const MessageItem = ({ message, isOwn }) => {
             borderBottomLeftRadius: !isOwn ? '4px' : `${user?.messageCorners ?? 16}px`
         }}
       >
-        {/* Glow Layer Removed */}
-
         {!isOwn && (
           <div className="flex items-center gap-2 mb-2">
             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-neo-secondary transition-colors">
@@ -66,8 +64,10 @@ const MessageItem = ({ message, isOwn }) => {
             <span className="transition-all duration-300">
               {message.status === 'sending' ? (
                 <Clock size={10} className="animate-spin text-neo-primary" />
-              ) : (
+              ) : message.status === 'seen' ? (
                 <CheckCheck size={12} className="text-neo-secondary" />
+              ) : (
+                <Check size={12} className="text-neo-text-dim" />
               )}
             </span>
           )}

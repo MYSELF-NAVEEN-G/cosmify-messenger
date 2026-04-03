@@ -13,7 +13,7 @@ import {
   doc,
   getDoc
 } from 'firebase/firestore';
-import { Search, Plus, Filter, Phone, CheckCheck, Clock } from 'lucide-react';
+import { Search, Plus, Filter, Phone, CheckCheck, Check, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const ChatList = () => {
@@ -137,6 +137,7 @@ const ChatList = () => {
           participantIds: [user._id, targetUser._id],
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
+          unreadCounts: { [user._id]: 0, [targetUser._id]: 0 },
           lastMessage: { 
             text: "Tap to start chatting", 
             senderId: "system",
@@ -164,7 +165,7 @@ const ChatList = () => {
             <Search 
               size={18} 
               className="text-neo-text-dim group-focus-within:text-neo-primary transition-colors" 
-            />
+              />
             <input
               type="text"
               value={search}
@@ -181,7 +182,7 @@ const ChatList = () => {
       <div className="flex-1 overflow-y-auto px-4 py-2 space-y-2 custom-scrollbar">
         <AnimatePresence mode="popLayout">
           {search.length > 0 ? (
-            // ... (Search Results)
+            // Search Results...
             search.length === 10 && (
               loading ? (
                 <div className="flex justify-center py-10">
@@ -214,6 +215,7 @@ const ChatList = () => {
             chats.map((chat) => {
               const other = chat.otherParticipant;
               const isSelected = selectedChat?._id === chat._id;
+              const unreadCount = chat.unreadCounts?.[user._id] || 0;
               
               return (
                 <motion.div
@@ -242,28 +244,38 @@ const ChatList = () => {
                   
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-center mb-1">
-                      <h4 className={`font-semibold text-[15px] truncate transition-colors ${isSelected ? 'text-neo-text' : 'text-neo-text-dim'}`}>
+                      <h4 className={`font-semibold text-[15px] truncate transition-colors ${isSelected || unreadCount > 0 ? 'text-neo-text' : 'text-neo-text-dim'}`}>
                         {chat.isGroup
                           ? chat.groupName
                           : (other?.username || (other?.phone ? `ID: ${other.phone}` : 'Unknown Agent'))}
                       </h4>
-                      <span className={`text-[10px] font-bold tracking-tighter ${isSelected ? 'text-neo-text' : 'text-neo-text-dim'}`}>
+                      <span className={`text-[10px] font-bold tracking-tighter ${unreadCount > 0 ? 'text-neo-primary' : 'text-neo-text-dim'}`}>
                         {chat.updatedAt ? new Date(chat.updatedAt.seconds * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
                       </span>
                     </div>
-                    <div className="flex items-center gap-1.5 min-w-0">
-                      {chat.lastMessage?.senderId === user._id && (
-                        <div className="flex-shrink-0">
-                          {chat.lastMessage?.status === 'sending' ? (
-                            <Clock size={10} className="text-neo-primary" />
-                          ) : (
-                            <CheckCheck size={12} className="text-neo-secondary" />
-                          )}
-                        </div>
+                    <div className="flex items-center justify-between gap-1.5 min-w-0">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        {chat.lastMessage?.senderId === user._id && (
+                          <div className="flex-shrink-0">
+                            {chat.lastMessage?.status === 'sending' ? (
+                              <Clock size={10} className="text-neo-primary" />
+                            ) : chat.lastMessage?.status === 'seen' ? (
+                                <CheckCheck size={12} className="text-neo-secondary" />
+                            ) : (
+                                <Check size={12} className="text-neo-text-dim" />
+                            )}
+                          </div>
+                        )}
+                        <p className={`text-[13px] truncate font-light transition-all ${unreadCount > 0 ? 'text-neo-text' : 'text-neo-text-dim opacity-70 group-hover:opacity-100'}`}>
+                          {chat.lastMessage?.text || 'Signal established...'}
+                        </p>
+                      </div>
+                      
+                      {unreadCount > 0 && (
+                         <div className="flex-shrink-0 w-5 h-5 rounded-full bg-neo-primary flex items-center justify-center shadow-lg shadow-neo-primary/30">
+                            <span className="text-[10px] font-black text-black">{unreadCount}</span>
+                         </div>
                       )}
-                      <p className="text-[13px] text-neo-text-dim truncate font-light opacity-70 group-hover:opacity-100 transition-opacity">
-                        {chat.lastMessage?.text || 'Signal established...'}
-                      </p>
                     </div>
                   </div>
                 </motion.div>

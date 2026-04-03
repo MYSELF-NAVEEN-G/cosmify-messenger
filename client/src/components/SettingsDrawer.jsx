@@ -26,7 +26,14 @@ import {
   Image as ImageIcon, 
   Palette as PaletteIcon,
   CornerDownRight,
-  Download
+  Download,
+  Zap,
+  User,
+  Shield,
+  Activity,
+  Cpu,
+  Gem,
+  ArrowRight
 } from 'lucide-react';
 import { useChat } from '../context/ChatContext';
 import { db } from '../firebase';
@@ -34,6 +41,7 @@ import { doc, updateDoc, getDoc } from 'firebase/firestore';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { storage } from '../firebase';
 import { themes } from './ThemeSelector';
+import UPIPaymentModal from './UPIPaymentModal';
 
 const SettingsItem = ({ icon: Icon, title, description, onClick, rightElement }) => (
   <button 
@@ -55,7 +63,7 @@ const SettingsItem = ({ icon: Icon, title, description, onClick, rightElement })
 
 const SettingsDrawer = ({ isOpen, onClose }) => {
   const { user, logout, updateSettings } = useChat();
-  const [view, setView] = useState('main'); // main, profile, account, privacy, chats, notifications
+  const [view, setView] = useState('main'); // main, profile, account, privacy, chats, features
   const [name, setName] = useState(user?.username || '');
   const [avatar, setAvatar] = useState(user?.avatar || '');
   const [bio, setBio] = useState(user?.bio || 'Available');
@@ -67,6 +75,7 @@ const SettingsDrawer = ({ isOpen, onClose }) => {
   const [avatarUploadProgress, setAvatarUploadProgress] = useState(0);
   const [canInstall, setCanInstall] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const fileInputRef = React.useRef();
   
   // Account settings
@@ -155,7 +164,50 @@ const SettingsDrawer = ({ isOpen, onClose }) => {
   };
 
   const handleAvatarUpload = async (e) => {
-    // ... (existing code omitted for brevity but actually preserved by tool)
+    const file = e.target.files[0];
+    if (!file || !user?._id) return;
+
+    setIsUploadingAvatar(true);
+    setAvatarUploadProgress(0);
+
+    try {
+      const storageRef = ref(storage, `avatars/${user._id}`);
+      const uploadTask = uploadBytesResumable(storageRef, file);
+
+      uploadTask.on('state_changed', 
+        (snapshot) => {
+          const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+          setAvatarUploadProgress(progress);
+        }, 
+        (error) => {
+          console.error("Upload error:", error);
+          setIsUploadingAvatar(false);
+        }, 
+        async () => {
+          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+          await updateDoc(doc(db, 'users', user._id), { avatar: downloadURL });
+          setAvatar(downloadURL);
+          setIsUploadingAvatar(false);
+        }
+      );
+    } catch (error) {
+      console.error("Error initiating upload:", error);
+      setIsUploadingAvatar(false);
+    }
+  };
+
+  const handlePaymentSuccess = async (paymentData) => {
+    if (!user?._id) return;
+    try {
+       await updateDoc(doc(db, 'users', user._id), {
+          isPremium: true,
+          paymentUTR: paymentData.utr
+       });
+       setIsPaymentModalOpen(false);
+       // Refresh via context or local state as needed
+    } catch (err) {
+       console.error("Payment confirmation failed:", err);
+    }
   };
 
   const handleInstallApp = async () => {
@@ -226,7 +278,7 @@ const SettingsDrawer = ({ isOpen, onClose }) => {
               <div className="flex flex-col">
                 <SettingsItem icon={Key} title="Account" description="Security notifications, permanent identity" onClick={() => setView('account')} />
                 <SettingsItem icon={Lock} title="Privacy" description="Block contacts, disappearing messages" onClick={() => setView('privacy')} />
-                <SettingsItem icon={Users} title="Lists" description="Manage people and groups" />
+                <SettingsItem icon={Users} title="Features" description="Manage people and groups" onClick={() => setView('features')} />
                 <SettingsItem icon={MessageSquare} title="Chats" description="Theme, wallpapers, chat history" onClick={() => setView('chats')} />
                 
                 {canInstall && (
@@ -642,7 +694,141 @@ const SettingsDrawer = ({ isOpen, onClose }) => {
           </motion.div>
         )}
 
+        {/* VIEW: FEATURES (DETAILED UPGRADE) */}
+        {view === 'features' && (
+          <motion.div 
+            key="features" 
+            initial={{ opacity: 0, x: 20 }} 
+            animate={{ opacity: 1, x: 0 }} 
+            exit={{ opacity: 0, x: 20 }} 
+            className="flex-1 h-full flex flex-col"
+          >
+            {renderHeader('Features')}
+            <div className="flex-1 min-h-0 overflow-y-auto p-8 custom-scrollbar pb-24 overscroll-behavior-y-contain">
+                <div className="space-y-10">
+                    
+                    {/* Identity Hub Section */}
+                    <div className="p-8 rounded-[36px] bg-neo-surface/40 border-2 border-neo-border shadow-2xl relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity">
+                            <Zap size={80} className="text-neo-primary" />
+                        </div>
+                        <div className="relative z-10">
+                           <div className="flex items-center gap-4 mb-6">
+                              <div className="p-3 bg-neo-primary/10 rounded-2xl border border-neo-primary/30">
+                                  <User size={24} className="text-neo-primary" />
+                              </div>
+                              <div>
+                                 <h3 className="text-[10px] text-white/40 font-black tracking-[0.3em] uppercase">Cosmify Identity</h3>
+                                 <div className="flex items-center gap-3">
+                                    <span className="text-2xl font-black text-white italic tracking-tighter">{user?.phone}</span>
+                                    {user?.isPremium && <Gem size={20} className="text-neo-primary animate-pulse" />}
+                                 </div>
+                              </div>
+                           </div>
+                           
+                           <div className="flex items-center justify-between p-4 bg-black/30 rounded-2xl border border-white/5">
+                              <div className="flex flex-col">
+                                 <span className="text-[9px] text-white/30 font-bold uppercase tracking-widest">Protocol Type</span>
+                                 <span className={`text-xs font-black uppercase italic ${user?.isPremium ? 'text-neo-primary' : 'text-white'}`}>
+                                    {user?.isPremium ? 'PREMIUM FANCY-ID' : 'STANDARD FREQUENCY'}
+                                 </span>
+                              </div>
+                              {!user?.isPremium && (
+                                 <button 
+                                    onClick={() => setIsPaymentModalOpen(true)}
+                                    className="px-5 py-2.5 bg-neo-primary text-black text-[10px] font-black uppercase tracking-widest rounded-xl hover:scale-105 active:scale-95 transition-all shadow-lg shadow-neo-primary/20"
+                                 >
+                                    Upgrade
+                                 </button>
+                              )}
+                           </div>
+                        </div>
+                    </div>
+
+                    {/* Stats & Tools Grid */}
+                    <div className="grid grid-cols-1 gap-6">
+                        {/* Live Sync Module */}
+                        <div className="p-8 rounded-[36px] border border-white/5 bg-neo-surface/20 flex flex-col gap-6 group hover:border-neo-primary/30 transition-all">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-10 h-10 rounded-2xl bg-neo-primary/10 flex items-center justify-center">
+                                        <Activity size={20} className="text-neo-primary" />
+                                    </div>
+                                    <div>
+                                        <h4 className="text-[10px] font-black tracking-widest uppercase text-white/40">Global Sync</h4>
+                                        <p className="text-sm font-black text-white italic tracking-tight">ACTIVE STATUS</p>
+                                    </div>
+                                </div>
+                                <div className="px-2 py-1 bg-neo-primary/20 rounded-lg">
+                                    <span className="text-[9px] font-black text-neo-primary tracking-widest animate-pulse">0.1ms</span>
+                                </div>
+                            </div>
+                            <div className="h-1.5 w-full bg-black/40 rounded-full overflow-hidden">
+                                <motion.div 
+                                    animate={{ width: ['40%', '95%', '85%', '98%'] }}
+                                    transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                                    className="h-full bg-gradient-to-r from-neo-primary/40 to-neo-primary" 
+                                />
+                            </div>
+                        </div>
+
+                        {/* Neural Encryption Module */}
+                        <div className="p-8 rounded-[36px] border border-white/5 bg-neo-surface/20 flex flex-col gap-4 group hover:border-neo-secondary/30 transition-all">
+                             <div className="flex items-center gap-4">
+                                <div className="w-10 h-10 rounded-2xl bg-neo-secondary/10 flex items-center justify-center">
+                                    <ShieldCheck size={20} className="text-neo-secondary" />
+                                </div>
+                                <div>
+                                    <h4 className="text-[10px] font-black tracking-widest uppercase text-white/40">Neural Protocol</h4>
+                                    <p className="text-sm font-black text-white italic tracking-tight">QUANTUM PROOF E2EE</p>
+                                </div>
+                            </div>
+                            <p className="text-[10px] text-white/30 font-bold leading-relaxed uppercase tracking-widest">
+                                YOUR COMMUNICATIONS ARE FRAGMENTED AND ENCRYPTED ACROSS THE NEURAL SPECTRUM.
+                            </p>
+                        </div>
+
+                         {/* Neo Themes Module */}
+                         <div className="p-8 rounded-[36px] border border-white/5 bg-neo-surface/20 flex items-center justify-between group hover:border-neo-purple/30 transition-all">
+                             <div className="flex items-center gap-4">
+                                <div className="w-10 h-10 rounded-2xl bg-neo-purple/10 flex items-center justify-center">
+                                    <Palette size={20} className="text-neo-purple" />
+                                </div>
+                                <div>
+                                    <h4 className="text-[10px] font-black tracking-widest uppercase text-white/40">Appearance</h4>
+                                    <p className="text-sm font-black text-white italic tracking-tight uppercase">{user?.defaultTheme || 'DEFAULT'} INTERFACE</p>
+                                </div>
+                            </div>
+                            <button onClick={() => setView('chats')} className="p-2 hover:bg-white/5 rounded-full transition-colors">
+                                <ChevronRight size={20} className="text-white/20" />
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Back Button */}
+                    <div className="pt-4">
+                        <button 
+                            onClick={() => setView('main')}
+                            className="w-full py-4 bg-neo-surface border border-neo-border text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-2xl hover:bg-white/5 transition-all"
+                        >
+                            Back To Settings
+                        </button>
+                    </div>
+                </div>
+            </div>
+          </motion.div>
+        )}
+
       </AnimatePresence>
+
+      <UPIPaymentModal 
+         isOpen={isPaymentModalOpen}
+         onClose={() => setIsPaymentModalOpen(false)}
+         onSuccess={handlePaymentSuccess}
+         amount={30}
+         displayName={user?.username}
+      />
+
     </motion.div>
   );
 };

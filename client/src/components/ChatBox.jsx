@@ -10,7 +10,10 @@ import {
   addDoc, 
   serverTimestamp,
   updateDoc,
-  doc
+  doc,
+  increment,
+  writeBatch,
+  getDocs
 } from 'firebase/firestore';
 import { storage } from '../firebase';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
@@ -20,7 +23,6 @@ import MessageItem from './MessageItem';
 import ContactDrawer from './ContactDrawer';
 import ChatMenu from './ChatMenu';
 import ThemeSelector, { themes } from './ThemeSelector';
-import { deleteDoc, writeBatch, getDocs } from 'firebase/firestore';
 import Logo from './Logo';
 import GroupInfoDrawer from './GroupInfoDrawer';
 
@@ -101,6 +103,61 @@ const ChatBox = () => {
     return () => unsubscribe();
   }, [selectedChat?._id, user?.disappearingMessages]);
 
+  /** 
+   * MARK AS SEEN LOGIC 
+   * When new messages arrive, if they are from the other participant and 
+   * this chat box is active, mark them as seen and reset our unread count.
+   */
+  useEffect(() => {
+    if (!selectedChat?._id || !user?._id || messages.length === 0) return;
+
+    const markAsSeen = async () => {
+      const batch = writeBatch(db);
+      let updatedCount = 0;
+      let shouldUpdateLastMessageStatus = false;
+
+      // 1. Mark incoming messages as seen
+      messages.forEach((msg) => {
+        if (msg.senderId !== user._id && msg.status !== 'seen') {
+          const msgRef = doc(db, 'messages', msg._id);
+          batch.update(msgRef, { status: 'seen' });
+          updatedCount++;
+          
+          // Check if this msg is the last message of the conversation
+          if (msg.text === selectedChat.lastMessage?.text && msg.senderId === selectedChat.lastMessage?.senderId) {
+            shouldUpdateLastMessageStatus = true;
+          }
+        }
+      });
+
+      // 2. Clear unread count and update last message status in the conversation
+      const convRef = doc(db, 'conversations', selectedChat._id);
+      const convUpdates = {
+        [`unreadCounts.${user._id}`]: 0
+      };
+
+      if (shouldUpdateLastMessageStatus) {
+        convUpdates['lastMessage.status'] = 'seen';
+      }
+
+      // We always perform the update to the conversation to ensure unreadCounts are reset to 0
+      // even if no specific message was marked seen in this pass (defensive)
+      batch.update(convRef, convUpdates);
+
+      if (updatedCount > 0 || shouldUpdateLastMessageStatus) {
+        try {
+          await batch.commit();
+        } catch (err) {
+          console.error("Error marking as seen:", err);
+        }
+      }
+    };
+
+    // Use a small timeout to avoid double updates on rapid message receipt
+    const timeout = setTimeout(markAsSeen, 500);
+    return () => clearTimeout(timeout);
+  }, [messages, selectedChat?._id, user?._id, selectedChat.lastMessage]);
+
   // Listener for other participant's status and privacy settings
   useEffect(() => {
     if (!selectedChat?.otherParticipant?._id) return;
@@ -153,6 +210,8 @@ const ChatBox = () => {
     setMessages(prev => [...prev, optimisticMsg]);
 
     try {
+      const otherId = selectedChat.participantIds?.find(id => id !== user._id);
+      
       const msgData = {
         conversationId: selectedChat._id,
         senderId: user._id,
@@ -160,18 +219,36 @@ const ChatBox = () => {
         senderAvatar: user.avatar,
         text: text,
         createdAt: serverTimestamp(),
+        status: 'sent' // Initial status
       };
       await addDoc(collection(db, 'messages'), msgData);
 
       const convRef = doc(db, 'conversations', selectedChat._id);
-      await updateDoc(convRef, {
+      
+      const convUpdate = {
         lastMessage: {
           text: text,
           senderId: user._id,
-          createdAt: serverTimestamp()
+          createdAt: serverTimestamp(),
+          status: 'sent'
         },
         updatedAt: serverTimestamp()
-      });
+      };
+
+      // Atomic increment for unread count
+      if (otherId) {
+        // If unreadCounts object doesn't exist at all, we initialize it
+        if (!selectedChat.unreadCounts) {
+          convUpdate.unreadCounts = {
+            [user._id]: 0,
+            [otherId]: 1
+          };
+        } else {
+          convUpdate[`unreadCounts.${otherId}`] = increment(1);
+        }
+      }
+
+      await updateDoc(convRef, convUpdate);
 
     } catch (err) {
       console.error("Error sending message:", err);
@@ -199,6 +276,7 @@ const ChatBox = () => {
     setUploadProgress(0);
     setError(null);
     try {
+      const otherId = selectedChat.participantIds?.find(id => id !== user._id);
       const storageRef = ref(storage, `chat-images/${selectedChat._id}/${Date.now()}_${imagePreview.file.name}`);
       const task = uploadBytesResumable(storageRef, imagePreview.file);
       task.on('state_changed',
@@ -214,11 +292,28 @@ const ChatBox = () => {
             text: newMessage.trim() || '',
             imageUrl,
             createdAt: serverTimestamp(),
+            status: 'sent'
           });
-          await updateDoc(doc(db, 'conversations', selectedChat._id), {
-            lastMessage: { text: '📷 Photo', senderId: user._id, createdAt: serverTimestamp() },
+          
+          const convRef = doc(db, 'conversations', selectedChat._id);
+          const convUpdate = {
+            lastMessage: { text: '📷 Photo', senderId: user._id, createdAt: serverTimestamp(), status: 'sent' },
             updatedAt: serverTimestamp()
-          });
+          };
+
+          if (otherId) {
+            // If unreadCounts object doesn't exist at all, we initialize it
+            if (!selectedChat.unreadCounts) {
+              convUpdate.unreadCounts = {
+                [user._id]: 0,
+                [otherId]: 1
+              };
+            } else {
+              convUpdate[`unreadCounts.${otherId}`] = increment(1);
+            }
+          }
+
+          await updateDoc(convRef, convUpdate);
           setImagePreview(null);
           setNewMessage('');
           setUploading(false);
@@ -252,7 +347,8 @@ const ChatBox = () => {
       const convRef = doc(db, 'conversations', selectedChat._id);
       await updateDoc(convRef, {
         lastMessage: null,
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
+        unreadCounts: {} // Reset all counts
       });
       
       setMessages([]);

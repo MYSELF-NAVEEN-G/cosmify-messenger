@@ -76,6 +76,22 @@ export const ChatProvider = ({ children }) => {
     };
   }, []);
 
+  // State Synchronization: Keep selectedChat in sync with the live chats array 
+  // from Firestore to ensure all components see the most current data instantly.
+  useEffect(() => {
+    if (!selectedChat?._id || chats.length === 0) return;
+    
+    const updatedChat = chats.find(c => c._id === selectedChat._id);
+    if (updatedChat) {
+      // Only update if the data has actually changed to avoid infinite loops
+      const hasChanged = JSON.stringify(updatedChat) !== JSON.stringify(selectedChat);
+      if (hasChanged) {
+        console.log(`[SyncEngine] Refreshing selectedChat: ${selectedChat._id}`);
+        setSelectedChat(updatedChat);
+      }
+    }
+  }, [chats, selectedChat?._id]);
+
   // Theme application: Apply theme class to document.body
   useEffect(() => {
     // Priority: 1. Selected Chat Theme, 2. User Default Theme, 3. 'default'
