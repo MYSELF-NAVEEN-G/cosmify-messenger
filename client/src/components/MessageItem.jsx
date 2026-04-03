@@ -14,10 +14,10 @@ const MessageItem = ({ message, isOwn }) => {
       initial={{ opacity: 0, scale: 0.8, y: 20, rotateX: isOwn ? 15 : -15 }}
       animate={{ opacity: 1, scale: 1, y: 0, rotateX: 0 }}
       transition={{ type: 'spring', damping: 15, stiffness: 100 }}
-      className={`flex w-full mb-4 md:mb-6 ${isOwn ? 'justify-end pl-4 md:pl-12' : 'justify-start pr-4 md:pr-12'}`}
+      className={`flex w-full mb-4 md:mb-6 ${isOwn ? 'justify-end pl-6 md:pl-24' : 'justify-start pr-6 md:pr-24'}`}
     >
       <div 
-        className={`relative max-w-[85%] md:max-w-2xl px-6 py-3.5 transition-all duration-300 shadow-sm border ${
+        className={`relative max-w-[75%] md:max-w-2xl px-4 md:px-6 py-3.5 transition-all duration-300 shadow-sm border ${
           isOwn 
             ? 'ml-auto border-transparent' 
             : 'border-neo-border'

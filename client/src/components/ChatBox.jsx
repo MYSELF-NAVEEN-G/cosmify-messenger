@@ -17,7 +17,7 @@ import {
 } from 'firebase/firestore';
 import { storage } from '../firebase';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
-import { Send, Smile, Paperclip, MoreVertical, Search, Mic, ArrowLeft, X } from 'lucide-react';
+import { Send, Smile, Paperclip, MoreVertical, Search, Mic, ArrowLeft, X, CheckCircle2, UserX } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import MessageItem from './MessageItem';
 import ContactDrawer from './ContactDrawer';
@@ -440,7 +440,7 @@ const ChatBox = () => {
                 e.stopPropagation(); // Prevent opening drawer when clicking back
                 setSelectedChat(null);
             }}
-            className="p-2 -ml-2 rounded-full hover:bg-neo-surface text-neo-text lg:hidden transition-colors"
+            className="p-2 mr-1 rounded-full hover:bg-neo-surface text-neo-text lg:hidden transition-colors"
             title="Return to Chats"
           >
             <ArrowLeft size={24} />
@@ -459,13 +459,31 @@ const ChatBox = () => {
                 />
             </div>
           </div>
-            <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-                <h4 className="font-bold text-[16px] md:text-[18px] text-neo-text tracking-tight truncate">
-                {selectedChat?.isGroup
-                  ? selectedChat.groupName
-                  : (otherParticipant?.username || (otherParticipant?.phone ? `Number: ${otherParticipant.phone}` : 'Unknown'))}
-                </h4>
+            <div className="flex-1 min-w-0 flex flex-col justify-center py-1">
+            <div className="flex items-center gap-2 h-7">
+                {otherParticipant?.isBanned ? (
+                  <div className="bg-red-500/10 border border-red-500/30 px-3 py-1 rounded-lg flex items-center gap-2 shadow-sm">
+                    <h4 className="font-bold text-[16px] md:text-[18px] text-red-500 tracking-tight truncate uppercase">
+                      Banned User
+                    </h4>
+                    <UserX size={18} className="text-red-500 shrink-0" />
+                  </div>
+                ) : otherParticipant?.isPremium ? (
+                  <div className="bg-white px-3 py-1 rounded-lg flex items-center gap-2 shadow-sm border border-black/5">
+                    <h4 className="font-bold text-[16px] md:text-[18px] text-black tracking-tight truncate">
+                    {selectedChat?.isGroup
+                      ? selectedChat.groupName
+                      : (otherParticipant?.username || (otherParticipant?.phone ? `ID: ${otherParticipant.phone}` : 'Unknown'))}
+                    </h4>
+                    <CheckCircle2 size={18} className="text-blue-500 fill-blue-500/10 shrink-0" />
+                  </div>
+                ) : (
+                  <h4 className="font-bold text-[16px] md:text-[18px] text-neo-text tracking-tight truncate">
+                    {selectedChat?.isGroup
+                      ? selectedChat.groupName
+                      : (otherParticipant?.username || (otherParticipant?.phone ? `Number: ${otherParticipant.phone}` : 'Unknown'))}
+                  </h4>
+                )}
               {!selectedChat?.isGroup && canShowStatus && otherUserStatus === 'online' && (
                     <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-neo-secondary rounded-full" />
                 )}
@@ -501,7 +519,7 @@ const ChatBox = () => {
       </div>
 
       {/* Futuristic Message Feed (Centered) */}
-      <div className="flex-1 overflow-y-auto px-4 md:px-6 py-6 md:py-10 space-y-6 md:space-y-8 z-10 custom-scrollbar relative">
+      <div className="flex-1 overflow-x-hidden overflow-y-auto pl-4 pr-[10px] md:pl-6 md:pr-[18px] py-6 md:py-10 space-y-6 md:space-y-8 z-10 custom-scrollbar relative">
         {loading && messages.length === 0 && (
           <div className="flex justify-center py-20">
             <div className="w-10 h-10 border-4 border-neo-primary border-t-transparent rounded-full animate-spin" />
@@ -516,7 +534,7 @@ const ChatBox = () => {
           </div>
         )}
 
-        <div className="max-w-4xl mx-auto flex flex-col gap-4 md:gap-6">
+        <div className="w-full flex flex-col gap-4 md:gap-6">
           <AnimatePresence initial={false}>
             {messages.map((m, index) => {
               const messageDate = new Date(m.createdAt).toLocaleDateString();
@@ -540,9 +558,12 @@ const ChatBox = () => {
                     <motion.div 
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="flex justify-center my-6"
+                      className="w-full flex justify-center my-6 sticky top-2 z-20 pointer-events-none"
                     >
-                      <span className="px-4 py-1.5 rounded-full neo-glass text-[10px] md:text-[11px] font-bold text-neo-text uppercase tracking-[0.2em] border border-neo-border">
+                      <span 
+                        className="px-4 py-1.5 rounded-full neo-glass text-[10px] md:text-[11px] font-bold text-neo-text uppercase tracking-[0.2em] border border-neo-border pointer-events-auto backdrop-blur-md shadow-lg"
+                        style={{ paddingLeft: 'calc(1rem + 0.2em)' }}
+                      >
                         {formatHeaderDate(m.createdAt)}
                       </span>
                     </motion.div>
@@ -566,7 +587,7 @@ const ChatBox = () => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 10 }}
-              className="max-w-4xl mx-auto mb-3 flex items-end gap-3 bg-neo-surface border border-neo-border rounded-3xl p-3"
+              className="w-full mb-3 flex items-end gap-3 bg-neo-surface border border-neo-border rounded-3xl p-3"
             >
               <div className="relative flex-shrink-0">
                 <img
@@ -608,7 +629,7 @@ const ChatBox = () => {
           )}
         </AnimatePresence>
 
-        <form onSubmit={sendMessage} className="max-w-4xl mx-auto relative group">
+        <form onSubmit={sendMessage} className="w-full relative group">
           <div className="absolute inset-0 bg-neo-cyan/10 blur-2xl opacity-0 group-focus-within:opacity-100 transition-opacity" />
           <div className="relative neo-glass rounded-full flex items-center p-1.5 md:p-2 pl-4 md:pl-6 gap-2 md:gap-3 group-focus-within:border-neo-cyan/40 transition-all">
             <div className="flex items-center gap-1 md:gap-2">

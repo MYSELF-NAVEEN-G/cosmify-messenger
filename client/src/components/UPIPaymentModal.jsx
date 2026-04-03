@@ -4,7 +4,7 @@ import { X, Copy, Check, Upload, AlertTriangle, QrCode, Phone, CreditCard, Arrow
 import { storage } from '../firebase';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 
-const UPIPaymentModal = ({ isOpen, onClose, onSuccess, amount = 20, vpa = 'dhanunaveen2415@oksbi', displayName }) => {
+const UPIPaymentModal = ({ isOpen, onClose, onSuccess, amount = 200, vpa = 'dhanunaveen2415@oksbi', displayName }) => {
   const [utr, setUtr] = useState('');
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -61,7 +61,7 @@ const UPIPaymentModal = ({ isOpen, onClose, onSuccess, amount = 20, vpa = 'dhanu
               <div className="p-2 bg-neo-primary/20 rounded-xl">
                 <CreditCard className="text-neo-primary" size={20} />
               </div>
-              <h3 className="text-xl font-black uppercase italic tracking-tighter text-white">Claim Fancy ID</h3>
+              <h3 className="text-xl font-black uppercase italic tracking-tighter text-white">Claim Blue Identity</h3>
             </div>
             <button onClick={onClose} className="p-2 hover:bg-white/5 rounded-full transition-colors">
               <X size={20} className="text-white/50" />
@@ -108,7 +108,7 @@ const UPIPaymentModal = ({ isOpen, onClose, onSuccess, amount = 20, vpa = 'dhanu
             <div className="bg-neo-pink/10 border border-neo-pink/20 rounded-2xl p-4 flex items-start gap-3">
               <AlertTriangle className="text-neo-pink shrink-0" size={18} />
               <p className="text-[10px] text-neo-pink/90 font-black leading-relaxed uppercase italic">
-                IMPORTANT: Fake or illegal payments will lead to a permanent account ban. We verify every UTR manually.
+                IMPORTANT: Fake or illegal payments will lead to a permanent account ban. WARNING: Illegal or forging compulsory ban. We verify every UTR manually.
               </p>
             </div>
 

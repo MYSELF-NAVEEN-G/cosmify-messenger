@@ -209,8 +209,8 @@ const ProfileSetup = () => {
               />
               
               {phone.length === 10 && (
-                <div className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${mode === 'free' ? 'bg-neo-primary/10 text-neo-primary' : 'bg-neo-pink/10 text-neo-pink'}`}>
-                  {mode === 'free' ? 'Free ID' : mode === 'fancy' ? 'Fancy ID' : 'Custom ID'}
+                <div className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${mode === 'free' ? 'bg-neo-primary/10 text-neo-primary' : 'bg-blue-500/10 text-blue-500'}`}>
+                  {mode === 'free' ? 'Free ID' : 'Blue Identity'}
                 </div>
               )}
               
@@ -255,14 +255,17 @@ const ProfileSetup = () => {
                   <button 
                     type="button"
                     onClick={handleFancyGenerate}
-                    className="w-full px-6 py-3.5 bg-neo-primary/10 border border-neo-primary/30 hover:border-neo-primary text-neo-primary transition-all rounded-2xl flex items-center justify-between relative group/gem overflow-hidden"
+                    className="w-full px-6 py-3.5 bg-blue-500/10 border border-blue-500/30 hover:border-blue-500 text-blue-500 transition-all rounded-2xl flex items-center justify-between relative group/gem overflow-hidden"
                   >
                     <div className="flex items-center gap-3 relative z-10">
-                        <Gem size={16} className="group-hover/gem:scale-110 transition-transform" />
-                        <span className="text-[11px] font-black uppercase tracking-widest text-left">Generate Fancy Number</span>
+                        <CheckCircle2 size={16} className="group-hover/gem:scale-110 transition-transform" />
+                        <span className="text-[11px] font-black uppercase tracking-widest text-left">Get Blue Name Identity</span>
                     </div>
-                    <span className="text-[11px] font-black uppercase tracking-widest relative z-10 px-3 py-1 bg-neo-primary text-white rounded-lg shadow-sm whitespace-nowrap">₹30 to Own</span>
+                    <span className="text-[11px] font-black uppercase tracking-widest relative z-10 px-3 py-1 bg-blue-500 text-white rounded-lg shadow-sm whitespace-nowrap">₹200 One-time</span>
                   </button>
+                  <p className="text-[8px] text-neo-text-dim text-center uppercase tracking-widest opacity-50 px-4">
+                    WARNING: Illegal or forging compulsory ban. We verify every transaction.
+                  </p>
                 </div>
               )}
 
@@ -312,7 +315,7 @@ const ProfileSetup = () => {
         onClose={() => setIsPaymentModalOpen(false)}
         onSuccess={handlePaymentSuccess}
         displayName={displayName}
-        amount={30}
+        amount={200}
       />
     </div>
   );

@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, User, Phone, Info } from 'lucide-react';
+import { ArrowLeft, User, Phone, Info, CheckCircle2, UserX } from 'lucide-react';
 
 const ContactDrawer = ({ isOpen, onClose, contact }) => {
   if (!contact) return null;
@@ -38,14 +38,34 @@ const ContactDrawer = ({ isOpen, onClose, contact }) => {
             {/* Content */}
             <div className="flex-1 overflow-y-auto p-8 flex flex-col items-center custom-scrollbar">
               {/* Avatar Section */}
-              <div className="relative mb-10">
-                <div className="w-44 h-44 rounded-full overflow-hidden border-4 border-neo-purple shadow-[0_0_30px_rgba(106,13,173,0.3)]">
+              <div className="relative mb-6 flex flex-col items-center">
+                <div className="w-44 h-44 rounded-full overflow-hidden border-4 border-neo-purple shadow-[0_0_30px_rgba(106,13,173,0.3)] mb-4">
                   <img 
                     src={contact.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${contact.username}`} 
                     alt="Identity" 
                     className="w-full h-full object-cover" 
                   />
                 </div>
+                
+                {contact.isBanned ? (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex items-center gap-2 bg-red-500/10 border border-red-500/20 px-4 py-1.5 rounded-full"
+                  >
+                    <UserX size={14} className="text-red-500" />
+                    <span className="text-[10px] font-black text-red-500 uppercase tracking-widest">Banned User</span>
+                  </motion.div>
+                ) : contact.isPremium && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 px-4 py-1.5 rounded-full"
+                  >
+                    <CheckCircle2 size={14} className="text-blue-500" />
+                    <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest">Verified User</span>
+                  </motion.div>
+                )}
               </div>
 
               {/* Name Section */}
@@ -79,7 +99,7 @@ const ContactDrawer = ({ isOpen, onClose, contact }) => {
 
               {/* Security Banner */}
               <div className="mt-auto w-full p-6 bg-neo-purple/5 rounded-3xl border border-neo-purple/10 text-center">
-                <p className="text-[9px] text-white font-bold uppercase tracking-[0.2em] leading-relaxed">
+                <p className="text-[9px] text-neo-text font-bold uppercase tracking-[0.2em] leading-relaxed">
                    Biometric verification complete.<br/>Neural transmission end-to-end encrypted.
                 </p>
               </div>

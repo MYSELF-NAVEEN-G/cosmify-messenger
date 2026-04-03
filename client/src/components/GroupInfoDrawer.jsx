@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeft, RotateCcw, Pencil, Check, Shield, ShieldOff,
-  UserMinus, UserPlus, X, Search, Crown, Info
+  UserMinus, UserPlus, X, Search, Crown, Info, CheckCircle2, UserX
 } from 'lucide-react';
 import { useChat } from '../context/ChatContext';
 import { db } from '../firebase';
@@ -330,8 +330,16 @@ const GroupInfoDrawer = ({ isOpen, onClose }) => {
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-neo-text truncate">
+                    <p className="text-sm font-bold text-neo-text truncate flex items-center gap-1.5">
                       {m.username}{isSelf && <span className="text-neo-primary"> (You)</span>}
+                      {m.isBanned ? (
+                        <span className="flex items-center gap-1 bg-red-500/10 px-1.5 py-0.5 rounded border border-red-500/20">
+                          <UserX size={10} className="text-red-500" />
+                          <span className="text-[8px] font-black text-red-500 uppercase tracking-tighter">Banned</span>
+                        </span>
+                      ) : m.isPremium && (
+                        <CheckCircle2 size={12} className="text-blue-500 fill-blue-500/10 shrink-0" />
+                      )}
                     </p>
                     <p className={`text-[10px] font-bold uppercase tracking-widest ${
                       role === 'creator' ? 'text-neo-secondary' : role === 'admin' ? 'text-neo-primary' : 'text-neo-text-dim/50'

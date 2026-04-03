@@ -33,7 +33,8 @@ import {
   Activity,
   Cpu,
   Gem,
-  ArrowRight
+  ArrowRight,
+  CheckCircle2
 } from 'lucide-react';
 import { useChat } from '../context/ChatContext';
 import { db } from '../firebase';
@@ -236,11 +237,11 @@ const SettingsDrawer = ({ isOpen, onClose }) => {
       <div className="flex items-center gap-6 text-neo-text w-full">
         <button 
           onClick={() => backTo === 'close' ? onClose() : setView(backTo)} 
-          className="hover:bg-white/5 p-2 rounded-full transition-colors text-white"
+          className="hover:bg-neo-text/5 p-2 rounded-full transition-colors text-neo-text"
         >
           <ArrowLeft size={24} />
         </button>
-        <h2 className="text-[20px] font-black uppercase italic tracking-tighter text-white flex-1">{title}</h2>
+        <h2 className="text-[20px] font-black uppercase italic tracking-tighter text-neo-text flex-1">{title}</h2>
         {view === 'main' && (
              <button className="p-2 hover:bg-neo-surface rounded-full transition-colors text-neo-text-dim">
                 <Search size={22} strokeWidth={1.5} />
@@ -387,6 +388,26 @@ const SettingsDrawer = ({ isOpen, onClose }) => {
                 }} className="absolute bottom-2 right-2 p-3 bg-neo-purple rounded-full text-black shadow-lg hover:scale-110 transition-all z-20">
                   <RotateCcw size={20} />
                 </button>
+                
+                {user?.isBanned ? (
+                  <motion.div 
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-red-500 text-white px-3 py-1 rounded-full flex items-center gap-1.5 shadow-lg border-2 border-neo-bg z-30"
+                  >
+                    <UserX size={12} fill="white" />
+                    <span className="text-[9px] font-black uppercase tracking-widest whitespace-nowrap">Account Banned</span>
+                  </motion.div>
+                ) : user?.isPremium && (
+                  <motion.div 
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-blue-500 text-white px-3 py-1 rounded-full flex items-center gap-1.5 shadow-lg border-2 border-neo-bg z-30"
+                  >
+                    <CheckCircle2 size={12} fill="white" />
+                    <span className="text-[9px] font-black uppercase tracking-widest whitespace-nowrap">Verified User</span>
+                  </motion.div>
+                )}
               </div>
               {avatar !== user?.avatar && (
                   <button onClick={() => handleUpdateField('avatar', avatar)} disabled={loading} className="mb-8 px-8 py-3 bg-neo-purple text-black rounded-full text-xs font-black uppercase tracking-widest shadow-[0_0_20px_rgba(106,13,173,0.4)] hover:scale-105 disabled:opacity-50 transition-all font-sans">
@@ -556,7 +577,7 @@ const SettingsDrawer = ({ isOpen, onClose }) => {
                               onClick={() => updateSettings({ lastSeenPrivacy: opt })}
                               className={`px-3 py-1.5 text-[10px] font-black uppercase tracking-widest transition-colors ${
                                 (user?.lastSeenPrivacy || 'everyone') === opt
-                                  ? 'bg-neo-primary text-white'
+                                  ? 'bg-neo-primary text-black'
                                   : 'text-neo-text-dim hover:text-neo-text'
                               }`}
                             >
@@ -581,9 +602,9 @@ const SettingsDrawer = ({ isOpen, onClose }) => {
                               onClick={() => updateSettings({ disappearingMessages: opt })}
                               className={`px-3 py-1.5 text-[10px] font-black uppercase tracking-widest transition-colors ${
                                 (user?.disappearingMessages || 'off') === opt
-                                  ? 'bg-neo-primary text-white'
+                                  ? 'bg-neo-primary text-black'
                                   : 'text-neo-text-dim hover:text-neo-text'
-                              }`}
+                               }`}
                             >
                               {opt === 'off' ? 'Off' : opt === '1d' ? '24h' : opt === '7d' ? '7d' : '90d'}
                             </button>
@@ -616,7 +637,7 @@ const SettingsDrawer = ({ isOpen, onClose }) => {
                                 </div>
                             ))
                         ) : (
-                            <p className="text-white/20 text-center py-8 text-xs italic tracking-widest">No active blocks in your frequency spectrum.</p>
+                            <p className="text-neo-text-dim text-center py-8 text-xs italic tracking-widest">No active blocks in your frequency spectrum.</p>
                         )}
                     </div>
                 </div>
@@ -645,7 +666,7 @@ const SettingsDrawer = ({ isOpen, onClose }) => {
                         </div>
                     </div>
                     <div className="flex justify-end">
-                        <div className="px-4 py-2.5 rounded-2xl bg-neo-primary text-white max-w-[80%] shadow-lg shadow-neo-primary/20" style={{ borderRadius: `${user?.messageCorners ?? 16}px` }}>
+                        <div className="px-4 py-2.5 rounded-2xl bg-neo-primary text-black max-w-[80%] shadow-lg shadow-neo-primary/20" style={{ borderRadius: `${user?.messageCorners ?? 16}px` }}>
                             <p className="text-[15px]">It's morning in Tokyo 😎</p>
                         </div>
                     </div>
@@ -681,8 +702,8 @@ const SettingsDrawer = ({ isOpen, onClose }) => {
                                 >
                                     <div className="absolute inset-0" style={{ background: theme.preview }} />
                                     {/* Mock bubble in scroller */}
-                                    <div className="absolute top-4 left-2 right-2 flex flex-col gap-1.5 pointer-events-none">
-                                        <div className="h-2 w-8 bg-white/20 rounded-full" />
+                                     <div className="absolute top-4 left-2 right-2 flex flex-col gap-1.5 pointer-events-none">
+                                        <div className="h-2 w-8 bg-neo-text-dim/20 rounded-full" />
                                         <div className="h-2 w-12 bg-neo-primary/40 rounded-full self-end" />
                                     </div>
                                     <div className="absolute inset-0 bg-black/20 hover:bg-transparent transition-colors" />
@@ -782,22 +803,23 @@ const SettingsDrawer = ({ isOpen, onClose }) => {
                         <div className="relative z-10">
                            <div className="flex items-center gap-4 mb-6">
                               <div className="p-3 bg-neo-primary/10 rounded-2xl border border-neo-primary/30">
-                                  <User size={24} className="text-neo-primary" />
+                                  <CheckCircle2 size={24} className="text-neo-primary" />
                               </div>
                               <div>
-                                 <h3 className="text-[10px] text-white/40 font-black tracking-[0.3em] uppercase">Cosmify Identity</h3>
+                                 <h3 className="text-[10px] text-neo-text-dim font-black tracking-[0.3em] uppercase">Cosmify Identity</h3>
                                  <div className="flex items-center gap-3">
-                                    <span className="text-2xl font-black text-white italic tracking-tighter">{user?.phone}</span>
-                                    {user?.isPremium && <Gem size={20} className="text-neo-primary animate-pulse" />}
+                                    <span className="text-2xl font-black text-neo-text italic tracking-tighter">{user?.phone}</span>
+                                    {user?.isPremium && <CheckCircle2 size={20} className="text-neo-primary" />}
                                  </div>
                               </div>
                            </div>
                            
-                           <div className="flex items-center justify-between p-4 bg-black/30 rounded-2xl border border-white/5">
-                              <div className="flex flex-col">
-                                 <span className="text-[9px] text-white/30 font-bold uppercase tracking-widest">Protocol Type</span>
-                                 <span className={`text-xs font-black uppercase italic ${user?.isPremium ? 'text-neo-primary' : 'text-white'}`}>
-                                    {user?.isPremium ? 'PREMIUM FANCY-ID' : 'STANDARD FREQUENCY'}
+                           <div className="flex items-center justify-between p-4 md:p-5 bg-[#1a1b1e] rounded-2xl border border-white/10 shadow-xl overflow-hidden relative group/idcard">
+                              <div className="absolute inset-0 bg-neo-primary/5 opacity-0 group-hover/idcard:opacity-100 transition-opacity" />
+                              <div className="flex flex-col relative z-10">
+                                 <span className="text-[10px] text-white/40 font-black uppercase tracking-[0.2em] mb-1">Protocol Type</span>
+                                 <span className={`text-[13px] font-black uppercase italic tracking-wider ${user?.isPremium ? 'text-neo-primary' : 'text-white'}`}>
+                                    {user?.isPremium ? 'BLUE NAME IDENTITY' : 'STANDARD FREQUENCY'}
                                  </span>
                               </div>
                               {!user?.isPremium && (
@@ -805,10 +827,17 @@ const SettingsDrawer = ({ isOpen, onClose }) => {
                                     onClick={() => setIsPaymentModalOpen(true)}
                                     className="px-5 py-2.5 bg-neo-primary text-black text-[10px] font-black uppercase tracking-widest rounded-xl hover:scale-105 active:scale-95 transition-all shadow-lg shadow-neo-primary/20"
                                  >
-                                    Upgrade
+                                    Get Blue Name
                                  </button>
                               )}
                            </div>
+                           {!user?.isPremium && (
+                             <div className="mt-4 p-3 bg-neo-pink/10 border border-neo-pink/20 rounded-xl">
+                               <p className="text-[8px] text-neo-pink font-black uppercase tracking-widest leading-relaxed">
+                                 ₹200 One-time. WARNING: Illegal or forging compulsory ban.
+                               </p>
+                             </div>
+                           )}
                         </div>
                     </div>
 
@@ -822,8 +851,8 @@ const SettingsDrawer = ({ isOpen, onClose }) => {
                                         <Activity size={20} className="text-neo-primary" />
                                     </div>
                                     <div>
-                                        <h4 className="text-[10px] font-black tracking-widest uppercase text-white/40">Global Sync</h4>
-                                        <p className="text-sm font-black text-white italic tracking-tight">ACTIVE STATUS</p>
+                                        <h4 className="text-[10px] font-black tracking-widest uppercase text-neo-text-dim">Global Sync</h4>
+                                        <p className="text-sm font-black text-neo-text italic tracking-tight">ACTIVE STATUS</p>
                                     </div>
                                 </div>
                                 <div className="px-2 py-1 bg-neo-primary/20 rounded-lg">
@@ -846,11 +875,11 @@ const SettingsDrawer = ({ isOpen, onClose }) => {
                                     <ShieldCheck size={20} className="text-neo-secondary" />
                                 </div>
                                 <div>
-                                    <h4 className="text-[10px] font-black tracking-widest uppercase text-white/40">Neural Protocol</h4>
-                                    <p className="text-sm font-black text-white italic tracking-tight">QUANTUM PROOF E2EE</p>
+                                    <h4 className="text-[10px] font-black tracking-widest uppercase text-neo-text-dim">Neural Protocol</h4>
+                                    <p className="text-sm font-black text-neo-text italic tracking-tight">QUANTUM PROOF E2EE</p>
                                 </div>
                             </div>
-                            <p className="text-[10px] text-white/30 font-bold leading-relaxed uppercase tracking-widest">
+                            <p className="text-[10px] text-neo-text-dim font-bold leading-relaxed uppercase tracking-widest text-left">
                                 YOUR COMMUNICATIONS ARE FRAGMENTED AND ENCRYPTED ACROSS THE NEURAL SPECTRUM.
                             </p>
                         </div>
@@ -862,8 +891,8 @@ const SettingsDrawer = ({ isOpen, onClose }) => {
                                     <Palette size={20} className="text-neo-purple" />
                                 </div>
                                 <div>
-                                    <h4 className="text-[10px] font-black tracking-widest uppercase text-white/40">Appearance</h4>
-                                    <p className="text-sm font-black text-white italic tracking-tight uppercase">{user?.defaultTheme || 'DEFAULT'} INTERFACE</p>
+                                    <h4 className="text-[10px] font-black tracking-widest uppercase text-neo-text-dim">Appearance</h4>
+                                    <p className="text-sm font-black text-neo-text italic tracking-tight uppercase">{user?.defaultTheme || 'DEFAULT'} INTERFACE</p>
                                 </div>
                             </div>
                             <button onClick={() => setView('chats')} className="p-2 hover:bg-white/5 rounded-full transition-colors">
@@ -876,7 +905,7 @@ const SettingsDrawer = ({ isOpen, onClose }) => {
                     <div className="pt-4">
                         <button 
                             onClick={() => setView('main')}
-                            className="w-full py-4 bg-neo-surface border border-neo-border text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-2xl hover:bg-white/5 transition-all"
+                            className="w-full py-4 bg-neo-surface border border-neo-border text-neo-text text-[10px] font-black uppercase tracking-[0.3em] rounded-2xl hover:bg-white/5 transition-all"
                         >
                             Back To Settings
                         </button>
@@ -892,7 +921,7 @@ const SettingsDrawer = ({ isOpen, onClose }) => {
          isOpen={isPaymentModalOpen}
          onClose={() => setIsPaymentModalOpen(false)}
          onSuccess={handlePaymentSuccess}
-         amount={30}
+         amount={200}
          displayName={user?.username}
       />
 

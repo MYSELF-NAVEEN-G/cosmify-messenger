@@ -13,7 +13,7 @@ import {
   doc,
   getDoc
 } from 'firebase/firestore';
-import { Search, Plus, Filter, Phone, CheckCheck, Check, Clock } from 'lucide-react';
+import { Search, Plus, Filter, Phone, CheckCheck, Check, Clock, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const ChatList = () => {
@@ -204,7 +204,26 @@ const ChatList = () => {
                       <img src={u.avatar} alt={u.username} className="w-full h-full object-cover" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-semibold text-[15px] text-neo-text truncate">{u.username}</h4>
+                      {u.isBanned ? (
+                        <div className="flex items-center gap-1.5 mb-1 text-left justify-start">
+                          <div className="bg-red-500/10 border border-red-500/30 px-2 py-0.5 rounded-md flex items-center gap-1.5 shadow-sm">
+                            <h4 className="font-bold text-[14px] text-red-500 uppercase tracking-widest">
+                              Banned User
+                            </h4>
+                          </div>
+                        </div>
+                      ) : u.isPremium ? (
+                        <div className="flex items-center gap-1.5 mb-1 text-left justify-start">
+                          <div className="bg-white px-2 py-0.5 rounded-md flex items-center gap-1.5 shadow-sm border border-black/5">
+                            <h4 className="font-bold text-[14px] text-black">
+                              {u.username}
+                            </h4>
+                            <CheckCircle2 size={14} className="text-blue-500 fill-blue-500/10 shrink-0" />
+                          </div>
+                        </div>
+                      ) : (
+                        <h4 className="font-semibold text-[15px] text-neo-text truncate text-left">{u.username}</h4>
+                      )}
                       <div className="flex items-center gap-1.5 text-[11px] text-neo-text-dim font-bold uppercase tracking-widest">
                         <Phone size={10} /> {u.phone}
                       </div>
@@ -247,11 +266,28 @@ const ChatList = () => {
                   
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-center mb-1">
-                      <h4 className={`font-semibold text-[15px] truncate transition-colors ${isSelected || unreadCount > 0 ? 'text-neo-text' : 'text-neo-text-dim'}`}>
-                        {chat.isGroup
-                          ? chat.groupName
-                          : (other?.username || (other?.phone ? `ID: ${other.phone}` : 'Unknown Agent'))}
-                      </h4>
+                      <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                        {other?.isBanned ? (
+                          <div className="bg-red-500/10 border border-red-500/30 px-2 py-0.5 rounded-md flex items-center gap-1.5 shadow-sm">
+                            <h4 className="font-bold text-[14px] text-red-500 uppercase tracking-widest truncate max-w-[120px]">
+                              Banned User
+                            </h4>
+                          </div>
+                        ) : other?.isPremium ? (
+                          <div className="bg-white px-2 py-0.5 rounded-md flex items-center gap-1.5 shadow-sm border border-black/5">
+                            <h4 className="font-bold text-[14px] text-black truncate max-w-[120px]">
+                              {chat.isGroup ? chat.groupName : (other?.username || other?.phone)}
+                            </h4>
+                            <CheckCircle2 size={14} className="text-blue-500 fill-blue-500/10 shrink-0" />
+                          </div>
+                        ) : (
+                          <h4 className={`font-semibold text-[15px] truncate transition-colors ${isSelected || unreadCount > 0 ? 'text-neo-text' : 'text-neo-text-dim'}`}>
+                            {chat.isGroup
+                              ? chat.groupName
+                              : (other?.username || (other?.phone ? `ID: ${other.phone}` : 'Unknown Agent'))}
+                          </h4>
+                        )}
+                      </div>
                       <span className={`text-[10px] font-bold tracking-tighter ${unreadCount > 0 ? 'text-neo-primary' : 'text-neo-text-dim'}`}>
                         {chat.updatedAt ? new Date(chat.updatedAt.seconds * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
                       </span>
