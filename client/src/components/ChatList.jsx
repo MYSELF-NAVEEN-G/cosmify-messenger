@@ -11,7 +11,8 @@ import {
   orderBy, 
   serverTimestamp,
   doc,
-  getDoc
+  getDoc,
+  updateDoc
 } from 'firebase/firestore';
 import { Search, Plus, Filter, Phone, CheckCheck, Check, Clock, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -159,6 +160,19 @@ const ChatList = () => {
     }
   };
 
+  const handleSelectChatClick = async (chat) => {
+    setSelectedChat(chat);
+    if (chat.unreadCounts?.[user._id] > 0) {
+      try {
+        await updateDoc(doc(db, 'conversations', chat._id), {
+          [`unreadCounts.${user._id}`]: 0
+        });
+      } catch (err) {
+        console.error("Failed to clear unread count:", err);
+      }
+    }
+  };
+
   return (
     <div className="flex-1 flex flex-col min-h-0">
       {/* Search Bar Container */}
@@ -201,7 +215,7 @@ const ChatList = () => {
                     className="flex items-center gap-4 px-4 py-3 bg-neo-surface border border-neo-border rounded-2xl hover:border-neo-primary/40 cursor-pointer group transition-all"
                   >
                     <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-neo-border group-hover:border-neo-primary transition-all">
-                      <img src={u.avatar} alt={u.username} className="w-full h-full object-cover" />
+                       <img src={u.avatar} alt={u.username} className="w-full h-full object-cover" />
                     </div>
                     <div className="flex-1 min-w-0">
                       {u.isBanned ? (
@@ -243,7 +257,7 @@ const ChatList = () => {
                 <motion.div
                   key={chat._id}
                   layout
-                  onClick={() => setSelectedChat(chat)}
+                  onClick={() => handleSelectChatClick(chat)}
                   className={`flex items-center gap-4 px-4 py-4 cursor-pointer rounded-2xl transition-all duration-300 relative group overflow-hidden ${
                     isSelected 
                         ? 'bg-neo-primary/10 border-neo-primary/30' 
