@@ -519,7 +519,7 @@ const ChatBox = () => {
       </div>
 
       {/* Futuristic Message Feed (Centered) */}
-      <div className="flex-1 overflow-x-hidden overflow-y-auto pl-6 pr-[18px] md:pl-10 md:pr-[34px] py-6 md:py-8 z-10 custom-scrollbar relative">
+      <div className="flex-1 overflow-x-hidden overflow-y-auto px-4 md:px-8 py-6 md:py-8 z-10 custom-scrollbar relative">
         {loading && messages.length === 0 && (
           <div className="flex justify-center py-20">
             <div className="w-10 h-10 border-4 border-neo-primary border-t-transparent rounded-full animate-spin" />
