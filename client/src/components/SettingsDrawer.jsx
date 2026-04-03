@@ -825,7 +825,7 @@ const SettingsDrawer = ({ isOpen, onClose }) => {
                               {!user?.isPremium && (
                                  <button 
                                     onClick={() => setIsPaymentModalOpen(true)}
-                                    className="px-5 py-2.5 bg-neo-primary text-black text-[10px] font-black uppercase tracking-widest rounded-xl hover:scale-105 active:scale-95 transition-all shadow-lg shadow-neo-primary/20"
+                                    className="relative z-10 px-5 py-2.5 bg-neo-primary text-black text-[10px] font-black uppercase tracking-widest rounded-xl hover:scale-105 active:scale-95 transition-all shadow-lg shadow-neo-primary/20"
                                  >
                                     Get Blue Name
                                  </button>
