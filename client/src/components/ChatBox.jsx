@@ -489,15 +489,15 @@ const ChatBox = () => {
                 )}
             </div>
             {selectedChat?.isGroup ? (
-              <span className="text-[10px] md:text-[12px] font-bold uppercase tracking-widest text-neo-text-dim">
+              <span className="block mt-1 text-[10px] md:text-[12px] font-bold uppercase tracking-widest text-neo-text-dim">
                 {selectedChat.participantIds?.length || 0} members
               </span>
             ) : canShowStatus ? (
-              <span className={`text-[10px] md:text-[12px] font-bold uppercase tracking-widest transition-colors ${otherUserStatus === 'online' ? 'text-neo-secondary' : 'text-neo-text-dim'}`}>
+              <span className={`block mt-1 text-[10px] md:text-[12px] font-bold uppercase tracking-widest transition-colors ${otherUserStatus === 'online' ? 'text-neo-secondary' : 'text-neo-text-dim'}`}>
                   {otherUserStatus}
               </span>
             ) : (
-              <span className="text-[10px] md:text-[12px] font-bold uppercase tracking-widest text-neo-text-dim/40">
+              <span className="block mt-1 text-[10px] md:text-[12px] font-bold uppercase tracking-widest text-neo-text-dim/40">
                 Last seen hidden
               </span>
             )}
@@ -519,7 +519,7 @@ const ChatBox = () => {
       </div>
 
       {/* Futuristic Message Feed (Centered) */}
-      <div className="flex-1 overflow-x-hidden overflow-y-auto pl-4 pr-[10px] md:pl-6 md:pr-[18px] py-6 md:py-10 space-y-6 md:space-y-8 z-10 custom-scrollbar relative">
+      <div className="flex-1 overflow-x-hidden overflow-y-auto pl-6 pr-[18px] md:pl-10 md:pr-[34px] py-6 md:py-8 z-10 custom-scrollbar relative">
         {loading && messages.length === 0 && (
           <div className="flex justify-center py-20">
             <div className="w-10 h-10 border-4 border-neo-primary border-t-transparent rounded-full animate-spin" />
@@ -558,7 +558,7 @@ const ChatBox = () => {
                     <motion.div 
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="w-full flex justify-center my-6 sticky top-2 z-20 pointer-events-none"
+                      className="w-full flex justify-center my-6 relative z-20 pointer-events-none"
                     >
                       <span 
                         className="px-4 py-1.5 rounded-full neo-glass text-[10px] md:text-[11px] font-bold text-neo-text uppercase tracking-[0.2em] border border-neo-border pointer-events-auto backdrop-blur-md shadow-lg"
