@@ -42,6 +42,7 @@ import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { storage } from '../firebase';
 import { themes } from './ThemeSelector';
 import UPIPaymentModal from './UPIPaymentModal';
+import { isNumberUnique } from '../utils/NumberGenerator';
 
 const SettingsItem = ({ icon: Icon, title, description, onClick, rightElement }) => (
   <button 
@@ -80,6 +81,9 @@ const SettingsDrawer = ({ isOpen, onClose }) => {
   
   // Account settings
   const [newPhone, setNewPhone] = useState(user?.phone || '');
+  const [secondaryPhone, setSecondaryPhone] = useState(user?.secondaryPhone || '');
+  const [isEditingSecondary, setIsEditingSecondary] = useState(false);
+  const [secondaryError, setSecondaryError] = useState('');
   
   // Blocked users data
   const [blockedUserDetails, setBlockedUserDetails] = useState([]);
@@ -90,6 +94,7 @@ const SettingsDrawer = ({ isOpen, onClose }) => {
       setAvatar(user.avatar || '');
       setBio(user.bio || 'Available');
       setNewPhone(user.phone || '');
+      setSecondaryPhone(user.secondaryPhone || '');
     }
 
     // Check if app can be installed as PWA
@@ -455,6 +460,68 @@ const SettingsDrawer = ({ isOpen, onClose }) => {
                 <div className="p-4 rounded-2xl bg-neo-surface/40 border border-neo-border italic text-[13px] text-neo-text-dim text-center">
                   Your Phone Number is your unique, permanent identity in Cosmify. It cannot be modified.
                 </div>
+
+                {user?.phone === '1111111111' && (
+                  <div className="p-6 rounded-[32px] bg-neo-primary/5 border border-neo-primary/20 space-y-4">
+                    <div className="flex items-center gap-3 text-neo-primary">
+                        <Zap size={20} />
+                        <h3 className="font-black text-neo-text tracking-[0.2em] uppercase text-[10px]">Admin Secondary Identity</h3>
+                    </div>
+                    
+                    <div className="flex items-center justify-between border-b border-neo-border pb-3">
+                        {isEditingSecondary ? (
+                          <input 
+                            type="text" 
+                            maxLength="10"
+                            value={secondaryPhone} 
+                            onChange={e => setSecondaryPhone(e.target.value.replace(/\D/g, ''))} 
+                            autoFocus 
+                            className="flex-1 bg-transparent border-none outline-none text-neo-text text-[18px] font-mono tracking-[0.2em]" 
+                            placeholder="SET 10-DIGIT ID"
+                          />
+                        ) : (
+                          <span className="text-[18px] text-neo-text font-mono tracking-[0.2em]">{user?.secondaryPhone || 'NOT CONFIGURED'}</span>
+                        )}
+                        <button 
+                          onClick={async () => {
+                            if (isEditingSecondary) {
+                                setLoading(true);
+                                if (secondaryPhone.length === 10) {
+                                    const available = await isNumberUnique(secondaryPhone);
+                                    if (available || secondaryPhone === user?.secondaryPhone) {
+                                        await handleUpdateField('secondaryPhone', secondaryPhone);
+                                        setIsEditingSecondary(false);
+                                        setSecondaryError('');
+                                    } else {
+                                        setSecondaryError('ID ALREADY TAKEN');
+                                    }
+                                } else if (secondaryPhone === '') {
+                                    await handleUpdateField('secondaryPhone', '');
+                                    setIsEditingSecondary(false);
+                                    setSecondaryError('');
+                                } else {
+                                    setSecondaryError('MUST BE 10 DIGITS');
+                                }
+                                setLoading(false);
+                            } else {
+                                setIsEditingSecondary(true);
+                            }
+                          }} 
+                          className="text-neo-primary p-2 hover:bg-neo-primary/10 rounded-xl transition-all"
+                        >
+                          {isEditingSecondary ? <Check size={20} /> : <Pencil size={18} />}
+                        </button>
+                    </div>
+                    
+                    {secondaryError && (
+                        <p className="text-[9px] text-neo-pink font-black uppercase tracking-widest animate-pulse">{secondaryError}</p>
+                    )}
+                    
+                    <p className="text-[9px] text-neo-text-dim leading-relaxed uppercase tracking-[0.15em] opacity-40">
+                        This allows you to be found via a second frequency while maintaining this primary account.
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </motion.div>

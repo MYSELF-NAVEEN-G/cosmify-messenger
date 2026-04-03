@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { auth, db } from '../firebase';
 import { onAuthStateChanged, signOut, getRedirectResult } from 'firebase/auth';
-import { doc, onSnapshot, updateDoc } from 'firebase/firestore';
+import { doc, onSnapshot, updateDoc, setDoc } from 'firebase/firestore';
 
 const ChatContext = createContext();
 
@@ -117,12 +117,12 @@ export const ChatProvider = ({ children }) => {
 
     const userRef = doc(db, 'users', user._id);
     
-    // Set to online
-    updateDoc(userRef, { status: 'online' }).catch(console.error);
+    // Set to online (using setDoc with merge for robustness on first-time logins)
+    setDoc(userRef, { status: 'online' }, { merge: true }).catch(console.error);
 
     const handlePresence = () => {
       // Offline update handled here
-      updateDoc(userRef, { status: 'offline' }).catch(console.error);
+      setDoc(userRef, { status: 'offline' }, { merge: true }).catch(console.error);
     };
 
     window.addEventListener('beforeunload', handlePresence);
@@ -135,7 +135,7 @@ export const ChatProvider = ({ children }) => {
   const logout = async () => {
     try {
       if (user?._id) {
-        await updateDoc(doc(db, 'users', user._id), { status: 'offline' });
+        await setDoc(doc(db, 'users', user._id), { status: 'offline' }, { merge: true });
       }
       await signOut(auth);
       setSelectedChat(null);

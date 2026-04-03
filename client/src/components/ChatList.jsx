@@ -89,12 +89,15 @@ const ChatList = () => {
     try {
       setLoading(true);
       const usersRef = collection(db, 'users');
-      // Search exactly by the 10-digit Messaging ID (phone)
-      const q = query(usersRef, where('phone', '==', cleanText));
+      // Search exactly by either the Primary or Secondary Messaging ID via two queries
+      const q1 = query(usersRef, where('phone', '==', cleanText));
+      const q2 = query(usersRef, where('secondaryPhone', '==', cleanText));
       
-      const snapshot = await getDocs(q);
-      const results = snapshot.docs
-        .map(doc => ({ ...doc.data(), _id: doc.id }))
+      const [snap1, snap2] = await Promise.all([getDocs(q1), getDocs(q2)]);
+      
+      // Combine and filter for unique users matching either field
+      const combined = [...snap1.docs, ...snap2.docs].map(doc => ({ ...doc.data(), _id: doc.id }));
+      const results = Array.from(new Map(combined.map(u => [u._id, u])).values())
         .filter(u => u._id !== user._id);
       
       setSearchResults(results);

@@ -156,7 +156,7 @@ const ChatBox = () => {
     // Use a small timeout to avoid double updates on rapid message receipt
     const timeout = setTimeout(markAsSeen, 500);
     return () => clearTimeout(timeout);
-  }, [messages, selectedChat?._id, user?._id, selectedChat.lastMessage]);
+  }, [messages, selectedChat?._id, user?._id, selectedChat?.lastMessage]);
 
   // Listener for other participant's status and privacy settings
   useEffect(() => {

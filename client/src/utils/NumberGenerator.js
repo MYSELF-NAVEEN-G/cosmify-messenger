@@ -5,9 +5,12 @@ import { collection, query, where, getDocs } from 'firebase/firestore';
  * Checks if a 10-digit number/ID is already in use in Firestore.
  */
 export const isNumberUnique = async (number) => {
-  const q = query(collection(db, 'users'), where('phone', '==', number));
-  const querySnapshot = await getDocs(q);
-  return querySnapshot.empty;
+  const usersRef = collection(db, 'users');
+  const q1 = query(usersRef, where('phone', '==', number));
+  const q2 = query(usersRef, where('secondaryPhone', '==', number));
+  
+  const [snap1, snap2] = await Promise.all([getDocs(q1), getDocs(q2)]);
+  return snap1.empty && snap2.empty;
 };
 
 /**
